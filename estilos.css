@@ -1,4 +1,18 @@
-/* Reset Básico */
+/* --- Variáveis Globais --- */
+/* Variáveis CSS (:root) para centralizar as cores principais
+   e facilitar a manutenção do tema. */
+:root {
+    --cor-primaria: #e94560; /* Vermelho/Rosa */
+    --cor-primaria-hover: #d63447;
+    --cor-fundo-dark: #1a1a2e; /* Azul Escuro */
+    --cor-fundo-light: #f8f9fa; /* Cinza Claro */
+    --cor-texto: #333;
+    --cor-texto-claro: #ddd;
+    --cor-borda: #e9ecef;
+    --cor-branca: #fff;
+}
+
+/* --- Reset Básico --- */
 * {
     margin: 0;
     padding: 0;
@@ -8,21 +22,21 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    color: #333;
-    background-color: #f8f9fa;
+    color: var(--cor-texto);
+    background-color: var(--cor-fundo-light);
 }
 
-/* Conteúdo principal (antigo .container) */
+/* Layout principal (usado em todas as páginas) */
 .conteudo {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* --- Cabeçalho --- */
+/* --- Cabeçalho (header) (Todas as páginas) --- */
 header {
-    background-color: #1a1a2e;
-    color: white;
+    background-color: var(--cor-fundo-dark);
+    color: var(--cor-branca);
     padding: 1rem 0;
     position: sticky;
     top: 0;
@@ -44,7 +58,7 @@ header .conteudo {
 }
 
 .logotipo i {
-    color: #e94560;
+    color: var(--cor-primaria);
 }
 
 .navegacao ul {
@@ -57,7 +71,7 @@ header .conteudo {
 }
 
 .navegacao ul li a {
-    color: white;
+    color: var(--cor-branca);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s;
@@ -65,9 +79,9 @@ header .conteudo {
     position: relative;
 }
 
-.navegacao ul li a:hover, 
+.navegacao ul li a:hover,
 .navegacao ul li a.active {
-    color: #e94560;
+    color: var(--cor-primaria);
 }
 
 .navegacao ul li a.active::after {
@@ -77,14 +91,21 @@ header .conteudo {
     left: 0;
     width: 100%;
     height: 2px;
-    background-color: #e94560;
+    background-color: var(--cor-primaria);
 }
 
-/* Botão principal (antigo .btn) */
-.botao {
+/* --- Botões (Estilos Base) --- */
+/* Estilo base partilhado por:
+   .botao (index.html, contactos.html)
+   .botao-filtro (calendario.html)
+   .botao-pagina (calendario.html)
+   .botao-secundario (resultados.html)
+*/
+.botao,
+.botao-filtro,
+.botao-pagina,
+.botao-secundario {
     display: inline-block;
-    background-color: #e94560;
-    color: white;
     padding: 0.8rem 1.5rem;
     border-radius: 4px;
     text-decoration: none;
@@ -92,163 +113,97 @@ header .conteudo {
     transition: all 0.3s;
     border: none;
     cursor: pointer;
+    color: var(--cor-branca);
+    background-color: var(--cor-primaria);
+    white-space: nowrap;
 }
 
-.botao:hover {
-    background-color: #d63447;
+.botao:hover,
+.botao-filtro:hover:not(:disabled),
+.botao-pagina:hover:not(:disabled) {
+    background-color: var(--cor-primaria-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* --- Secções (Página Inicial) --- */
-.hero {
-    background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)), 
-                url('https://images.unsplash.com/photo-1459865264687-595d652de67e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
-    background-size: cover;
-    background-position: center;
-    color: white;
-    text-align: center;
-    padding: 8rem 0;
+/* Modificadores de cor para botões */
+.botao-secundario,
+.botao-filtro.resetar {
+    background-color: #6c757d;
 }
 
-.conteudo-hero h2 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+.botao-secundario:hover,
+.botao-filtro.resetar:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.conteudo-hero p {
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin: 0 auto 2rem;
+/* Estado desativado (usado em calendario.html) */
+.botao-pagina:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
+/* --- Formulários (Estilos Base) --- */
+/* Estilo base para inputs e selects. Usado em:
+   .grupo-form (contactos.html)
+   .grupo-filtro (calendario.html)
+   .form-newsletter (footer em todas as páginas)
+*/
+.grupo-form input,
+.grupo-form textarea,
+.grupo-filtro select,
+.grupo-filtro input,
+.form-newsletter input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.grupo-form input:focus,
+.grupo-form textarea:focus,
+.grupo-filtro select:focus,
+.grupo-filtro input:focus {
+    outline: none;
+    border-color: var(--cor-primaria);
+}
+
+/* Labels e Grupos (contactos.html, calendario.html) */
+.grupo-form {
+    margin-bottom: 1.5rem;
+}
+
+.grupo-form label,
+.grupo-filtro label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--cor-fundo-dark);
+}
+
+/* --- Layout de Secções Comuns --- */
 section {
     padding: 5rem 0;
 }
 
+/* Título padrão de secção (usado em index.html, contactos.html) */
 section h2 {
     text-align: center;
     margin-bottom: 3rem;
     font-size: 2.2rem;
-    color: #1a1a2e;
+    color: var(--cor-fundo-dark);
 }
 
-.grelha-desportos,
-.grelha-funcionalidades {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-}
-
-.cartao-desporto {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 2rem;
-    text-align: center;
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: 1px solid #e9ecef;
-}
-
-.cartao-desporto:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.icone-desporto {
-    font-size: 3rem;
-    color: #e94560;
-    margin-bottom: 1rem;
-}
-
-.cartao-desporto h3 {
-    margin-bottom: 1rem;
-    color: #1a1a2e;
-}
-
-.funcionalidade {
-    text-align: center;
-    padding: 1.5rem;
-}
-
-.funcionalidade i {
-    font-size: 2.5rem;
-    color: #e94560;
-    margin-bottom: 1rem;
-}
-
-.funcionalidade h3 {
-    margin-bottom: 1rem;
-    color: #1a1a2e;
-}
-
-/* Eventos (Comum) */
-.grelha-eventos-proximos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-}
-
-.cartao-evento-proximo { /* Renomeado para não colidir com o .cartao-evento do calendário */
-    display: flex;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: 1px solid #e9ecef;
-}
-
-.cartao-evento-proximo:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.data-evento-proximo {
-    background-color: #e94560;
-    color: white;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 80px;
-}
-
-.data-evento-proximo .dia {
-    font-size: 1.8rem;
-    font-weight: bold;
-}
-
-.data-evento-proximo .mes {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-}
-
-.info-evento-proximo {
-    padding: 1.5rem;
-    flex-grow: 1;
-}
-
-.info-evento-proximo h3 {
-    margin-bottom: 0.5rem;
-    color: #1a1a2e;
-}
-
-.info-evento-proximo p {
-    margin-bottom: 0.3rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.botao-centro {
-    text-align: center;
-}
-
-/* Cabeçalho de Página (Comum) */
+/* Cabeçalho de página (usado em calendario.html, contactos.html, resultados.html) */
 .cabecalho-pagina {
-    background-color: #1a1a2e;
-    color: white;
+    background-color: var(--cor-fundo-dark);
+    color: var(--cor-branca);
     padding: 3rem 0;
     text-align: center;
 }
@@ -258,13 +213,152 @@ section h2 {
     margin-bottom: 0.5rem;
 }
 
-/* --- Secção Contactos --- */
-.seccao-contactos {
-    padding: 5rem 0;
-    background-color: white;
+/* Grelhas (usadas em index.html) */
+.grelha-desportos,
+.grelha-funcionalidades {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
 }
 
-.conteudo-contactos {
+/* --- Cartões (Cards) --- */
+
+/* Cartão de Desporto / Funcionalidade (index.html) */
+/* Estilo para .cartao-desporto e .funcionalidade. */
+.cartao-desporto,
+.funcionalidade {
+    background-color: var(--cor-fundo-light);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid var(--cor-borda);
+}
+
+.cartao-desporto:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.cartao-desporto h3,
+.funcionalidade h3 {
+    margin-bottom: 1rem;
+    color: var(--cor-fundo-dark);
+}
+
+.icone-desporto, /* (index.html) */
+.funcionalidade i { /* (index.html) */
+    font-size: 3rem;
+    color: var(--cor-primaria);
+    margin-bottom: 1rem;
+}
+
+/* Cartão de Evento - Vista Lista (index.html, calendario.html) */
+/* Estilo partilhado por .cartao-evento-proximo (index.html) e .cartao-evento (calendario.html). */
+.cartao-evento-proximo,
+.cartao-evento {
+    display: flex;
+    background-color: var(--cor-branca);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid var(--cor-borda);
+    align-items: stretch;
+}
+
+.cartao-evento-proximo:hover,
+.cartao-evento:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo partilhado por .data-evento-proximo (index.html) e .data-evento (calendario.html). */
+.data-evento-proximo,
+.data-evento {
+    background-color: var(--cor-primaria);
+    color: var(--cor-branca);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    text-align: center;
+}
+
+.data-evento-proximo .dia,
+.data-evento .dia {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.data-evento-proximo .mes,
+.data-evento .mes {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+/* Estilo partilhado por .info-evento-proximo (index.html) e .info-evento (calendario.html). */
+.info-evento-proximo,
+.info-evento {
+    padding: 1.5rem;
+    flex-grow: 1;
+}
+
+.info-evento-proximo h3,
+.info-evento h3 {
+    margin-bottom: 0.5rem;
+    color: var(--cor-fundo-dark);
+}
+
+.info-evento-proximo p,
+.info-evento p {
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* --- Página Inicial (index.html) --- */
+.hero { /* (index.html) */
+    background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)),
+                url('https://images.unsplash.com/photo-1459865264687-595d652de67e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+    background-size: cover;
+    background-position: center;
+    color: var(--cor-branca);
+    text-align: center;
+    padding: 8rem 0;
+}
+
+.conteudo-hero h2 { /* (index.html) */
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.conteudo-hero p { /* (index.html) */
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.grelha-eventos-proximos { /* Grelha de eventos em index.html */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.botao-centro { /* (index.html) */
+    text-align: center;
+}
+
+/* --- Página Contactos (contactos.html) --- */
+.seccao-contactos { /* (contactos.html) */
+    padding: 5rem 0;
+    background-color: var(--cor-branca);
+}
+
+.conteudo-contactos { /* (contactos.html) */
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
@@ -273,10 +367,10 @@ section h2 {
 .info-contactos h2,
 .form-contactos h2 {
     margin-bottom: 2rem;
-    color: #1a1a2e;
+    color: var(--cor-fundo-dark);
 }
 
-.item-contacto {
+.item-contacto { /* (contactos.html) */
     display: flex;
     margin-bottom: 2rem;
     gap: 1rem;
@@ -284,55 +378,30 @@ section h2 {
 
 .item-contacto i {
     font-size: 1.5rem;
-    color: #e94560;
+    color: var(--cor-primaria);
     margin-top: 0.3rem;
 }
 
 .item-contacto h3 {
     margin-bottom: 0.5rem;
-    color: #1a1a2e;
+    color: var(--cor-fundo-dark);
 }
 
-.grupo-form {
-    margin-bottom: 1.5rem;
-}
-
-.grupo-form label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.grupo-form input,
-.grupo-form textarea {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: inherit;
-}
-
-.grupo-form input:focus,
-.grupo-form textarea:focus {
-    outline: none;
-    border-color: #e94560;
-}
-
-/* --- Secção FAQ --- */
-.seccao-faq {
+/* FAQ (contactos.html) */
+.seccao-faq { /* (contactos.html) */
     padding: 5rem 0;
-    background-color: #f8f9fa;
+    background-color: var(--cor-fundo-light);
 }
 
-.item-faq {
+.item-faq { /* (contactos.html) */
     margin-bottom: 1rem;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--cor-borda);
     border-radius: 8px;
     overflow: hidden;
-    background-color: white;
+    background-color: var(--cor-branca);
 }
 
-.pergunta-faq {
+.pergunta-faq { /* (contactos.html) */
     padding: 1.5rem;
     display: flex;
     justify-content: space-between;
@@ -342,30 +411,308 @@ section h2 {
 }
 
 .pergunta-faq:hover {
-    background-color: #f8f9fa;
+    background-color: var(--cor-fundo-light);
 }
 
 .pergunta-faq h3 {
     margin: 0;
-    color: #1a1a2e;
+    color: var(--cor-fundo-dark);
 }
 
-.resposta-faq {
+.resposta-faq { /* (contactos.html) */
     padding: 0 1.5rem;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s, padding 0.3s;
 }
 
-.resposta-faq.active {
+.resposta-faq.active { /* Esta classe é controlada por JS */
     padding: 0 1.5rem 1.5rem;
-    max-height: 200px; /* Aumentar se necessário */
+    max-height: 200px;
 }
 
-/* --- Rodapé --- */
+/* --- Página Calendário (calendario.html) --- */
+.filtros { /* (calendario.html) */
+    background-color: var(--cor-branca);
+    padding: 2rem 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.container-filtros { /* (calendario.html) */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.grupo-filtro { /* (calendario.html) */
+    flex: 1;
+    min-width: 200px;
+}
+
+.calendario { /* (calendario.html) */
+    padding: 3rem 0;
+}
+
+.cabecalho-calendario { /* (calendario.html) */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.cabecalho-calendario h2 {
+    color: var(--cor-fundo-dark);
+    margin-bottom: 0;
+}
+
+.opcoes-vista { /* (calendario.html) */
+    display: flex;
+    gap: 0.5rem;
+}
+
+.botao-vista { /* (calendario.html) */
+    padding: 0.6rem 1rem;
+    background-color: var(--cor-branca);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.botao-vista:hover {
+    border-color: var(--cor-primaria);
+    color: var(--cor-primaria);
+}
+
+.botao-vista.active {
+    background-color: var(--cor-primaria);
+    color: var(--cor-branca);
+    border-color: var(--cor-primaria);
+}
+
+/* Link Seta (Resultado) - (calendario.html) */
+.link-resultado {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--cor-fundo-light);
+    color: var(--cor-primaria);
+    padding: 0 1.5rem;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: background-color 0.3s, color 0.3s;
+}
+.link-resultado:hover {
+    background-color: var(--cor-primaria);
+    color: var(--cor-branca);
+}
+
+/* Vista em Grelha (calendario.html) */
+.grelha-eventos { /* (calendario.html) */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.cartao-evento-grelha { /* (calendario.html) */
+    background-color: var(--cor-branca);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--cor-borda);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.cartao-evento-grelha:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cabecalho-evento { /* (calendario.html) */
+    background-color: var(--cor-primaria);
+    color: var(--cor-branca);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.corpo-evento { /* (calendario.html) */
+    padding: 1.5rem;
+    flex-grow: 1;
+}
+
+.corpo-evento h3 {
+    margin-bottom: 0.8rem;
+    color: var(--cor-fundo-dark);
+    font-size: 1.1rem;
+}
+
+.corpo-evento p {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+}
+
+.link-resultado-grelha { /* (calendario.html) */
+    display: block;
+    text-align: center;
+    background-color: var(--cor-fundo-light);
+    color: var(--cor-primaria);
+    padding: 0.8rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s, color 0.3s;
+}
+.link-resultado-grelha:hover {
+    background-color: var(--cor-primaria);
+    color: var(--cor-branca);
+}
+
+/* Paginação (calendario.html) */
+.paginacao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--cor-borda);
+}
+
+.info-pagina {
+    font-weight: 500;
+    color: var(--cor-fundo-dark);
+}
+
+/* Estados de Carregamento / Vazio (usado em calendario.html, resultados.html) */
+.carregamento,
+.sem-eventos {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+    grid-column: 1 / -1; /* Ocupa a grelha toda se estiver numa */
+}
+
+.carregamento i,
+.sem-eventos i {
+    font-size: 3rem;
+    color: var(--cor-primaria);
+    margin-bottom: 1rem;
+}
+
+.carregamento i {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* --- Página Resultados (resultados.html) --- */
+.detalhe-resultado { /* (resultados.html) */
+    padding: 3rem 0;
+}
+
+.cartao-resultado { /* (resultados.html) */
+    background-color: var(--cor-branca);
+    border-radius: 8px;
+    border: 1px solid var(--cor-borda);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cabecalho-resultado { /* (resultados.html) */
+    padding: 2rem;
+    border-bottom: 1px solid var(--cor-borda);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; 
+    gap: 1rem;
+}
+
+.cabecalho-resultado h2 {
+    text-align: left;
+    margin: 0;
+}
+
+.estado-jogo { /* (resultados.html) */
+    font-weight: bold;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    color: var(--cor-branca);
+}
+.estado-jogo.terminado {
+    background-color: var(--cor-primaria);
+}
+.estado-jogo.embreve {
+    background-color: #6c757d;
+}
+
+.corpo-resultado { /* (resultados.html) */
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+.info-jogo p { /* (resultados.html) */
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+.info-jogo p i {
+    color: var(--cor-primaria);
+    width: 20px;
+    text-align: center;
+}
+
+.placar { /* (resultados.html) */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--cor-fundo-light);
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.placar .equipa {
+    flex: 1;
+    text-align: center;
+}
+
+.emblema-equipa { /* (resultados.html) */
+    max-height: 80px;
+    margin-bottom: 1rem;
+}
+
+.placar .pontuacao {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--cor-fundo-dark);
+    margin: 0 2rem;
+}
+
+.rodape-resultado { /* (resultados.html) */
+    padding: 1.5rem;
+    text-align: center;
+    border-top: 1px solid var(--cor-borda);
+}
+
+
+/* --- Rodapé (Footer) (Todas as páginas) --- */
+/* O rodapé é usado em index.html, calendario.html, contactos.html, resultados.html. */
 footer {
-    background-color: #1a1a2e;
-    color: white;
+    background-color: var(--cor-fundo-dark);
+    color: var(--cor-branca);
     padding: 3rem 0 1rem;
 }
 
@@ -379,7 +726,7 @@ footer {
 .seccao-rodape h3,
 .seccao-rodape h4 {
     margin-bottom: 1rem;
-    color: #e94560;
+    color: var(--cor-primaria);
 }
 
 .seccao-rodape ul {
@@ -391,13 +738,13 @@ footer {
 }
 
 .seccao-rodape ul li a {
-    color: #ddd;
+    color: var(--cor-texto-claro);
     text-decoration: none;
     transition: color 0.3s;
 }
 
 .seccao-rodape ul li a:hover {
-    color: #e94560;
+    color: var(--cor-primaria);
 }
 
 .redes-sociais {
@@ -407,13 +754,13 @@ footer {
 }
 
 .redes-sociais a {
-    color: white;
+    color: var(--cor-branca);
     font-size: 1.2rem;
     transition: color 0.3s;
 }
 
 .redes-sociais a:hover {
-    color: #e94560;
+    color: var(--cor-primaria);
 }
 
 .form-newsletter {
@@ -421,16 +768,9 @@ footer {
     margin-top: 1rem;
 }
 
-.form-newsletter input {
-    flex-grow: 1;
-    padding: 0.8rem;
-    border: none;
-    border-radius: 4px 0 0 4px;
-}
-
 .form-newsletter button {
-    background-color: #e94560;
-    color: white;
+    background-color: var(--cor-primaria);
+    color: var(--cor-branca);
     border: none;
     padding: 0 1rem;
     border-radius: 0 4px 4px 0;
@@ -439,7 +779,7 @@ footer {
 }
 
 .form-newsletter button:hover {
-    background-color: #d63447;
+    background-color: var(--cor-primaria-hover);
 }
 
 .rodape-inferior {
@@ -448,448 +788,9 @@ footer {
     border-top: 1px solid #2d2d44;
 }
 
-/* --- ESTILOS DA PÁGINA CALENDÁRIO (antigo calendario.css) --- */
 
-/* Filtros */
-.filtros {
-    background-color: white;
-    padding: 2rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.container-filtros {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: flex-end;
-}
-
-.grupo-filtro {
-    flex: 1;
-    min-width: 200px;
-}
-
-.grupo-filtro label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #1a1a2e;
-}
-
-.grupo-filtro select,
-.grupo-filtro input {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 1rem;
-}
-
-.grupo-filtro select:focus,
-.grupo-filtro input:focus {
-    outline: none;
-    border-color: #e94560;
-}
-
-.botao-filtro {
-    padding: 0.8rem 1.5rem;
-    background-color: #e94560;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s;
-    white-space: nowrap;
-}
-
-.botao-filtro:hover {
-    background-color: #d63447;
-    transform: translateY(-2px);
-}
-
-.botao-filtro.resetar {
-    background-color: #6c757d;
-}
-
-.botao-filtro.resetar:hover {
-    background-color: #5a6268;
-}
-
-/* Secção Calendário */
-.calendario {
-    padding: 3rem 0;
-}
-
-.cabecalho-calendario {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.cabecalho-calendario h2 {
-    color: #1a1a2e;
-    margin-bottom: 0;
-}
-
-.opcoes-vista {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.botao-vista {
-    padding: 0.6rem 1rem;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.botao-vista:hover {
-    border-color: #e94560;
-    color: #e94560;
-}
-
-.botao-vista.active {
-    background-color: #e94560;
-    color: white;
-    border-color: #e94560;
-}
-
-/* Lista de Eventos (Vista Lista) */
-.lista-eventos {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.cartao-evento { /* Estilo partilhado com página inicial, mas aqui com modificações */
-    display: flex;
-    background-color: white;
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: 1px solid #e9ecef;
-    align-items: stretch;
-}
-
-.cartao-evento:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-.data-evento {
-    background-color: #e94560;
-    color: white;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 80px;
-}
-
-.data-evento .dia {
-    font-size: 1.8rem;
-    font-weight: bold;
-}
-
-.data-evento .mes {
-    font-size: 0.9rem;
-    text-transform: uppercase;
-}
-
-.info-evento {
-    padding: 1.5rem;
-    flex-grow: 1;
-}
-
-.info-evento h3 {
-    margin-bottom: 0.5rem;
-    color: #1a1a2e;
-}
-
-.info-evento p {
-    margin-bottom: 0.3rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-/* --- NOVO: Link para Resultado (Seta) --- */
-.link-resultado {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-    color: #e94560;
-    padding: 0 1.5rem;
-    text-decoration: none;
-    font-size: 1.2rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.link-resultado:hover {
-    background-color: #e94560;
-    color: white;
-}
-
-
-/* Vista em Grelha */
-.grelha-eventos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-}
-
-.cartao-evento-grelha {
-    background-color: white;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #e9ecef;
-    transition: transform 0.3s, box-shadow 0.3s;
-    display: flex;
-    flex-direction: column;
-}
-
-.cartao-evento-grelha:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-.cabecalho-evento {
-    background-color: #e94560;
-    color: white;
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.data-evento-pequena {
-    font-weight: bold;
-}
-
-.hora-evento {
-    font-size: 0.9rem;
-}
-
-.corpo-evento {
-    padding: 1.5rem;
-    flex-grow: 1;
-}
-
-.corpo-evento h3 {
-    margin-bottom: 0.8rem;
-    color: #1a1a2e;
-    font-size: 1.1rem;
-}
-
-.corpo-evento p {
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #666;
-}
-
-.corpo-evento .liga {
-    color: #999;
-    font-size: 0.9rem;
-}
-
-.link-resultado-grelha {
-    display: block;
-    text-align: center;
-    background-color: #f8f9fa;
-    color: #e94560;
-    padding: 0.8rem;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background-color 0.3s, color 0.3s;
-}
-.link-resultado-grelha:hover {
-    background-color: #e94560;
-    color: white;
-}
-
-/* Carregamento e Sem Eventos */
-.carregamento,
-.sem-eventos {
-    text-align: center;
-    padding: 3rem;
-    color: #666;
-    grid-column: 1 / -1; /* Para ocupar a grelha toda */
-}
-
-.carregamento i,
-.sem-eventos i {
-    font-size: 3rem;
-    color: #e94560;
-    margin-bottom: 1rem;
-}
-
-.carregamento i {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Paginação */
-.paginacao {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid #e9ecef;
-}
-
-.botao-pagina {
-    padding: 0.8rem 1.5rem;
-    background-color: #e94560;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.botao-pagina:hover:not(:disabled) {
-    background-color: #d63447;
-    transform: translateY(-2px);
-}
-
-.botao-pagina:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-.info-pagina {
-    font-weight: 500;
-    color: #1a1a2e;
-}
-
-/* --- ESTILOS DA PÁGINA RESULTADOS --- */
-.detalhe-resultado {
-    padding: 3rem 0;
-}
-
-.cartao-resultado {
-    background-color: white;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.cabecalho-resultado {
-    padding: 2rem;
-    border-bottom: 1px solid #e9ecef;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.cabecalho-resultado h2 {
-    text-align: left;
-    margin: 0;
-}
-
-.estado-jogo {
-    font-weight: bold;
-    padding: 0.3rem 0.8rem;
-    border-radius: 4px;
-    color: white;
-}
-.estado-jogo.terminado {
-    background-color: #e94560;
-}
-.estado-jogo.embreve {
-    background-color: #6c757d;
-}
-
-.corpo-resultado {
-    padding: 2rem;
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 2rem;
-}
-
-.info-jogo p {
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-}
-.info-jogo p i {
-    color: #e94560;
-    width: 20px;
-    text-align: center;
-}
-
-.placar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f8f9fa;
-    padding: 2rem;
-    border-radius: 8px;
-}
-
-.placar .equipa {
-    flex: 1;
-    text-align: center;
-}
-
-.emblema-equipa {
-    max-height: 80px;
-    margin-bottom: 1rem;
-}
-
-.placar .pontuacao {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #1a1a2e;
-    margin: 0 2rem;
-}
-
-.rodape-resultado {
-    padding: 1.5rem;
-    text-align: center;
-    border-top: 1px solid #e9ecef;
-}
-
-.botao-secundario {
-    display: inline-block;
-    background-color: #6c757d;
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s;
-    border: none;
-    cursor: pointer;
-}
-.botao-secundario:hover {
-    background-color: #5a6268;
-}
-
-
-/* --- Media Queries (Simplificado) --- */
+/* --- Media Queries (Responsividade) --- */
+/* Ajustes para ecrãs menores (max-width: 768px). */
 @media (max-width: 768px) {
     header .conteudo {
         flex-direction: column;
@@ -906,27 +807,22 @@ footer {
         margin-left: 0;
     }
     
-    .conteudo-hero h2 {
+    .conteudo-hero h2 { /* (index.html) */
         font-size: 2.2rem;
     }
     
-    .conteudo-contactos,
-    .corpo-resultado {
-        grid-template-columns: 1fr;
-    }
-    
-    .grelha-desportos,
-    .grelha-funcionalidades,
-    .grelha-eventos-proximos,
-    .grelha-eventos {
-        grid-template-columns: 1fr;
-    }
-    
-    .conteudo-rodape {
+    /* Grelhas (1 coluna) */
+    .conteudo-contactos, /* (contactos.html) */
+    .corpo-resultado, /* (resultados.html) */
+    .grelha-desportos, /* (index.html) */
+    .grelha-funcionalidades, /* (index.html) */
+    .grelha-eventos-proximos, /* (index.html) */
+    .grelha-eventos, /* (calendario.html) */
+    .conteudo-rodape { /* (Todas as páginas) */
         grid-template-columns: 1fr;
     }
 
-    /* Filtros responsivos */
+    /* Filtros (100% width - calendario.html) */
     .container-filtros {
         flex-direction: column;
     }
@@ -936,20 +832,14 @@ footer {
         width: 100%;
     }
     
-    .cabecalho-calendario {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .paginacao {
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-
-    .placar {
+    /* Layouts flex (1 coluna) */
+    .cabecalho-calendario, /* (calendario.html) */
+    .paginacao, /* (calendario.html) */
+    .placar { /* (resultados.html) */
         flex-direction: column;
         gap: 1.5rem;
     }
+    
     .placar .pontuacao {
         font-size: 2.5rem;
         margin: 0;
