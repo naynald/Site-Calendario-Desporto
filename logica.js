@@ -1,5 +1,5 @@
 // --- CONFIGURAÇÕES INICIAIS ---
-const API_KEY = '123'; // A nossa chave grátis (temos de ter cuidado com os limites!)
+const API_KEY = '123'; // A nossa chave grátis
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
 const SEASON = '2025-2026'; // A época que estamos a carregar
 const CACHE_KEY = 'sportcalendar_cache_v1'; // O nome da nossa "gaveta" no browser
