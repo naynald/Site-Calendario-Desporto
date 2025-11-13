@@ -1,12 +1,12 @@
+// logica.js - Versão Final (Ordenação Inteligente + Modo de Segurança)
+
 // --- CONSTANTES E CONFIGURAÇÃO DA API ---
 const API_KEY = '123'; // Chave gratuita para testes (limitada em algumas funcionalidades)
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
-const SEASON = '2024-2025'; // Define a época atual para buscar os jogos corretos
+const SEASON = '2025-2026'; // Define a época atual para buscar os jogos corretos
 
 // --- CONFIGURAÇÃO DAS LIGAS (EDITÁVEL) ---
 // Este objeto controla quais as ligas que aparecem no site.
-// Se quisermos adicionar mais ligas, basta colocar o ID e o Nome aqui.
-// O JavaScript vai ler isto e criar o menu "Select" automaticamente.
 const configLigas = {
     'football': [ // Futebol
         { id: '4344', nome: 'Liga Portugal' },
@@ -36,7 +36,6 @@ const sportMap = {
 };
 
 // --- ESTADO DA APLICAÇÃO ---
-// Variáveis globais para guardar os dados enquanto o utilizador navega
 let paginaAtual = 1;
 let eventosPorPagina = 12;
 let todosEventos = [];    // Lista completa vinda da API
@@ -49,7 +48,6 @@ function formatarData(dateStr) {
     if (!dateStr) return { day: '--', month: '--' };
     const date = new Date(dateStr);
     const day = date.getDate().toString().padStart(2, '0');
-    // Array de meses em PT-PT
     const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const month = months[date.getMonth()];
     return { day, month };
@@ -73,7 +71,6 @@ function obterIconeDesporto(sportName) {
 // --- LÓGICA DE INTERFACE (UI) ---
 
 // Esta função é CRUCIAL: Ela cria as opções do <select> dinamicamente.
-// Evita que tenhamos de escrever HTML manualmente para cada liga nova.
 function atualizarDropdownLigas() {
     const selectDesporto = document.getElementById('desporto');
     const selectLiga = document.getElementById('liga');
@@ -91,8 +88,8 @@ function atualizarDropdownLigas() {
         Object.keys(configLigas).forEach(sport => {
             configLigas[sport].forEach(liga => {
                 const option = document.createElement('option');
-                option.value = liga.id; // O valor enviado será o ID (ex: 4344)
-                option.textContent = liga.nome; // O texto visível será o Nome
+                option.value = liga.id;
+                option.textContent = liga.nome;
                 selectLiga.appendChild(option);
             });
         });
@@ -120,52 +117,90 @@ async function buscarEventosPorEpoca(leagueId) {
         return data.events || [];
     } catch (error) {
         console.error(`Erro ao carregar a liga ID ${leagueId}:`, error);
-        return []; // Retorna array vazio em caso de erro para não quebrar o site
+        return [];
     }
 }
 
-// Função principal que percorre TODAS as ligas configuradas e junta tudo
+// Busca PRÓXIMOS jogos (Usado na Home para evitar bloqueios)
+async function buscarProximosDaLiga(leagueId) {
+    try {
+        // Timeout de 3 segundos para não prender a página se a API estiver lenta
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+        const response = await fetch(`${BASE_URL}/${API_KEY}/eventsnextleague.php?id=${leagueId}`, {
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        const data = await response.json();
+        return data.events || [];
+    } catch (error) {
+        return []; // Falha silenciosa
+    }
+}
+
+// Função principal que percorre TODAS as ligas e ORGANIZA (Futuros primeiro)
 async function buscarTodosEventos() {
     const events = [];
     let todosIDs = [];
     
-    // 1. Recolhe todos os IDs de ligas do nosso ficheiro de configuração
+    // 1. Recolhe todos os IDs
     Object.values(configLigas).forEach(lista => {
         lista.forEach(item => todosIDs.push(item.id));
     });
 
-    // 2. Faz os pedidos à API em PARALELO (muito mais rápido que um a um)
+    // 2. Faz os pedidos em PARALELO
     const promises = todosIDs.map(id => buscarEventosPorEpoca(id));
     const results = await Promise.all(promises);
     
-    // 3. Junta os resultados de todas as ligas num único array
     results.forEach(leagueEvents => {
         if(leagueEvents) events.push(...leagueEvents);
     });
     
-    // 4. Remove duplicados (segurança extra)
+    // 3. Remove duplicados
     const uniqueEvents = Array.from(new Map(events.map(e => [e.idEvent, e])).values());
     
-    // 5. Ordena por Data (Futuros e Recentes misturados cronologicamente)
-    return uniqueEvents.sort((a, b) => {
-        const dataA = new Date(a.dateEvent + 'T' + (a.strTime || '00:00'));
-        const dataB = new Date(b.dateEvent + 'T' + (b.strTime || '00:00'));
-        return dataA - dataB; // Ascendente (mais antigo para mais recente)
+    // --- NOVA LÓGICA DE ORDENAÇÃO (FUTUROS PRIMEIRO) ---
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0); // Reset às horas para comparar apenas datas
+
+    const passados = [];
+    const futuros = [];
+
+    uniqueEvents.forEach(event => {
+        const dataEvento = new Date(event.dateEvent + 'T' + (event.strTime || '00:00'));
+        
+        if (dataEvento >= hoje) {
+            futuros.push(event);
+        } else {
+            passados.push(event);
+        }
     });
+
+    // Ordena Futuros: Do mais próximo para o mais distante (Ascendente)
+    futuros.sort((a, b) => {
+        return new Date(a.dateEvent + 'T' + (a.strTime || '00:00')) - new Date(b.dateEvent + 'T' + (b.strTime || '00:00'));
+    });
+
+    // Ordena Passados: Do mais recente para o mais antigo (Descendente)
+    passados.sort((a, b) => {
+        return new Date(b.dateEvent + 'T' + (b.strTime || '00:00')) - new Date(a.dateEvent + 'T' + (a.strTime || '00:00'));
+    });
+
+    // Junta tudo: Futuros no topo, Passados no fundo
+    return [...futuros, ...passados];
 }
 
 // --- COMPONENTES HTML (CARDS) ---
 
-// Gera o HTML de um cartão individual (usado tanto na Lista como na Home)
 function criarCartaoEvento(event, viewType = 'list') {
     const { day, month } = formatarData(event.dateEvent);
     const time = formatarHora(event.strTime);
     const sportIcon = obterIconeDesporto(event.strSport);
     
-    // Verifica se o jogo já tem resultado (pontuação existe)
     const temResultado = event.intHomeScore !== null && event.intAwayScore !== null;
     
-    // Lógica da Seta/Botão de Resultado
     let linkResultado = '';
     if (temResultado) {
         linkResultado = `
@@ -175,10 +210,8 @@ function criarCartaoEvento(event, viewType = 'list') {
         `;
     }
     
-    // Cria título seguro (caso API falhe o nome do evento)
     const titulo = event.strEvent || `${event.strHomeTeam} vs ${event.strAwayTeam}`;
 
-    // Template Vista Lista
     if (viewType === 'list') {
         return `
             <div class="cartao-evento">
@@ -194,9 +227,7 @@ function criarCartaoEvento(event, viewType = 'list') {
                 ${linkResultado} 
             </div>
         `;
-    } 
-    // Template Vista Grelha
-    else {
+    } else {
         return `
             <div class="cartao-evento-grelha">
                 <div class="cabecalho-evento">
@@ -216,12 +247,16 @@ function criarCartaoEvento(event, viewType = 'list') {
 
 // --- FUNÇÕES ESPECÍFICAS: PÁGINA CALENDÁRIO ---
 
-// Renderiza a lista de eventos no ecrã, respeitando a paginação
+// Renderiza a lista de eventos no ecrã, respeitando a paginação e o tipo de vista (Lista ou Grelha)
 function renderizarEventos(viewType = 'list') {
+    // 1. Obtém o contentor onde os cartões serão inseridos
     const container = document.getElementById('container-eventos');
+    
+    // Segurança: Se o contentor não existir (ex: estamos noutra página), pára a execução
     if (!container) return;
     
-    // Se não houver eventos após o filtro
+    // 2. Verificação de "Sem Resultados"
+    // Se o array de eventos filtrados estiver vazio, mostra uma mensagem amigável ao utilizador
     if (eventosFiltrados.length === 0) {
         container.innerHTML = `
             <div class="sem-eventos">
@@ -229,125 +264,162 @@ function renderizarEventos(viewType = 'list') {
                 <p>Nenhum evento encontrado. Tenta limpar os filtros.</p>
             </div>
         `;
+        // Atualiza a paginação (para esconder/desativar botões quando não há dados)
         atualizarPaginacao();
         return;
     }
     
-    // Cálculos de paginação
+    // 3. Cálculos de Paginação
+    // Define onde começa e acaba a "fatia" de eventos a mostrar na página atual
     const start = (paginaAtual - 1) * eventosPorPagina;
     const end = start + eventosPorPagina;
+    
+    // Cria um sub-array apenas com os eventos desta página
     const eventsToShow = eventosFiltrados.slice(start, end);
     
-    // Define classe para CSS (lista ou grelha)
+    // 4. Configuração Visual
+    // Alterna a classe CSS do contentor dependendo se a vista é 'list' ou 'grid'
     container.className = viewType === 'list' ? 'lista-eventos' : 'grelha-eventos';
     
-    // Injeta o HTML
+    // 5. Injeção de HTML
+    // Para cada evento na página atual, cria o cartão HTML e junta tudo numa string
     container.innerHTML = eventsToShow.map(event => criarCartaoEvento(event, viewType)).join('');
     
+    // 6. Atualiza os controlos de paginação (números e botões Anterior/Seguinte)
     atualizarPaginacao();
 }
 
-// Atualiza os números e botões da paginação
+// Atualiza os números e o estado dos botões da paginação (Anterior/Seguinte)
 function atualizarPaginacao() {
+    // 1. Calcula o número total de páginas necessárias
+    // Divide o total de eventos filtrados pelo número de eventos por página (12)
+    // O Math.ceil arredonda para cima (ex: 13 eventos / 12 = 1.08 -> 2 páginas)
+    // O '|| 1' garante que temos pelo menos 1 página, mesmo sem resultados
     const totalPages = Math.ceil(eventosFiltrados.length / eventosPorPagina) || 1;
     
+    // 2. Busca os elementos de texto no HTML (onde mostra "Página 1 de X")
     const elPagAtual = document.getElementById('pagina-atual');
     const elPagTotal = document.getElementById('paginas-totais');
     
-    if(elPagAtual) elPagAtual.textContent = paginaAtual;
-    if(elPagTotal) elPagTotal.textContent = totalPages;
+    // 3. Atualiza o texto na interface (se os elementos existirem)
+    if(elPagAtual) elPagAtual.textContent = paginaAtual; // Mostra a página onde estamos
+    if(elPagTotal) elPagTotal.textContent = totalPages;  // Mostra o total de páginas
     
+    // 4. Busca os botões de navegação
     const btnAnt = document.getElementById('pagina-anterior');
     const btnSeg = document.getElementById('pagina-seguinte');
     
+    // 5. Controla se os botões podem ser clicados ou não (disabled)
+    
+    // Desativa o botão "Anterior" se estivermos na página 1 (não dá para voltar atrás)
     if(btnAnt) btnAnt.disabled = paginaAtual === 1;
+    
+    // Desativa o botão "Seguinte" se já estivermos na última página ou além dela
     if(btnSeg) btnSeg.disabled = paginaAtual >= totalPages;
 }
 
-// Aplica os filtros selecionados pelo utilizador
+// --- FILTROS E INTERATIVIDADE ---
+
+// Função acionada pelo botão "Aplicar Filtros"
+// Lê os valores dos inputs e filtra a lista de eventos
 function aplicarFiltros() {
+    // 1. Captura os valores escolhidos pelo utilizador
     const sport = document.getElementById('desporto').value;
     const leagueID = document.getElementById('liga').value;
     const date = document.getElementById('data').value;
-    const team = document.getElementById('equipa').value.toLowerCase();
+    const team = document.getElementById('equipa').value.toLowerCase(); // Converte para minúsculas para facilitar a busca
     
-    // Filtra o array principal (todosEventos)
+    // 2. Filtra o array principal (todosEventos)
     eventosFiltrados = todosEventos.filter(event => {
+        // Filtro por Desporto: Se não for "todos", verifica se corresponde ao mapa
         if (sport !== 'all' && event.strSport !== sportMap[sport]) return false;
+        
+        // Filtro por Liga: Compara o ID da liga
         if (leagueID !== 'all' && event.idLeague !== leagueID) return false;
+        
+        // Filtro por Data: Compara a data exata (YYYY-MM-DD)
         if (date && event.dateEvent !== date) return false;
         
+        // Filtro por Nome da Equipa:
         if (team) {
-            const eventName = (event.strEvent || '').toLowerCase();
-            const homeTeam = (event.strHomeTeam || '').toLowerCase();
-            const awayTeam = (event.strAwayTeam || '').toLowerCase();
-            // Verifica se o nome pesquisado existe no evento ou nas equipas
-            if (!eventName.includes(team) && !homeTeam.includes(team) && !awayTeam.includes(team)) {
-                return false;
-            }
+            // Junta o nome do evento e das equipas numa só string para procurar em tudo
+            const txt = (event.strEvent + event.strHomeTeam + event.strAwayTeam).toLowerCase();
+            // Se o texto pesquisado não estiver nesta string combinada, exclui o evento
+            if (!txt.includes(team)) return false;
         }
+        
+        // Se passar todas as verificações, mantém o evento na lista
         return true;
     });
     
-    // Volta à página 1 sempre que se filtra
-    paginaAtual = 1;
+    // 3. Reseta a navegação
+    paginaAtual = 1; // Volta sempre à primeira página após filtrar
     
-    // Mantém a vista atual (lista ou grelha)
+    // 4. Redesenha a lista mantendo a vista atual (Lista ou Grelha)
     const activeBtn = document.querySelector('.botao-vista.active');
     renderizarEventos(activeBtn ? activeBtn.dataset.view : 'list');
 }
 
-// Limpa tudo e restaura os dados originais
+// Função acionada pelo botão "Limpar Filtros"
+// Restaura o estado original da aplicação
 function limparFiltros() {
+    // 1. Limpa os valores visuais dos inputs
     document.getElementById('desporto').value = 'all';
-    atualizarDropdownLigas(); // Reconstrói o dropdown completo
+    atualizarDropdownLigas(); // Importante: Reconstrói o dropdown com todas as ligas
     document.getElementById('liga').value = 'all';
     document.getElementById('data').value = '';
     document.getElementById('equipa').value = '';
     
+    // 2. Restaura a lista de dados completa (cópia do original)
     eventosFiltrados = [...todosEventos];
+    
+    // 3. Reseta paginação e vista
     paginaAtual = 1;
-    renderizarEventos('list');
+    renderizarEventos('list'); // Por defeito, volta à vista de lista
 }
 
 // --- INICIALIZADORES (PONTO DE ENTRADA) ---
 
 // 1. Inicializador da Página CALENDÁRIO
+// Esta função corre apenas quando estamos na página calendario.html
 async function initCalendario() {
-// 1. Estado Inicial: Mostra o ícone de "Loading" enquanto os dados não chegam
     const container = document.getElementById('container-eventos');
+    
+    // A. Estado Inicial: Mostra o ícone de "Loading" enquanto os dados não chegam
     container.innerHTML = `<div class="carregamento"><i class="fas fa-spinner fa-spin"></i><p>A carregar eventos da época ${SEASON}...</p></div>`;
     
-    // 2. Inicialização dos Dados
-    atualizarDropdownLigas(); // Preenche o <select> das ligas pela primeira vez
-    todosEventos = await buscarTodosEventos(); // Vai à API buscar TUDO (pode demorar uns segundos)
-    eventosFiltrados = [...todosEventos]; // Inicialmente, a lista filtrada é igual à lista completa
-    renderizarEventos('list'); // Desenha os cartões no ecrã (vista de lista por defeito)
+    try {
+        // B. Inicialização dos Dados
+        atualizarDropdownLigas(); // Preenche o <select> das ligas pela primeira vez
+        todosEventos = await buscarTodosEventos(); // Vai à API buscar TUDO (pode demorar uns segundos)
+        eventosFiltrados = [...todosEventos]; // Inicialmente, a lista filtrada é igual à lista completa
+        renderizarEventos('list'); // Desenha os cartões no ecrã (vista de lista por defeito)
+    } catch (error) {
+        // Se a API falhar, mostra mensagem de erro
+        container.innerHTML = `<div class="sem-eventos"><p>Erro na API. Tenta recarregar a página.</p></div>`;
+    }
     
-    // 3. Configuração dos Botões de Filtro
-    // Botão "Aplicar Filtros": Executa a filtragem baseada nas escolhas do utilizador
+    // C. Configuração dos Event Listeners (Botões)
     document.getElementById('aplicar-filtros').addEventListener('click', aplicarFiltros);
-    
-    // Botão "Limpar Filtros": Reseta tudo para o estado original
     document.getElementById('limpar-filtros').addEventListener('click', limparFiltros);
-    
     // Dropdown Dinâmico: Quando mudas o Desporto, as Ligas atualizam automaticamente
     document.getElementById('desporto').addEventListener('change', atualizarDropdownLigas);
     
-    // 4. Configuração da Navegação (Paginação)
-    // Botão "Anterior": Só funciona se não estivermos na página 1
+    // D. Configuração da Navegação (Paginação)
+    
+    // Botão "Anterior"
     document.getElementById('pagina-anterior').addEventListener('click', () => {
         if (paginaAtual > 1) { 
             paginaAtual--; 
-            // Mantém a vista atual (lista ou grelha) ao mudar de página
+            // Renderiza mantendo a vista ativa e faz scroll suave para o topo
             renderizarEventos(document.querySelector('.botao-vista.active').dataset.view); 
-            window.scrollTo({top:0, behavior:'smooth'}); // Volta ao topo da página suavemente
+            window.scrollTo({top:0, behavior:'smooth'}); 
         }
     });
 
-    // Botão "Seguinte": Só funciona se não estivermos na última página
+    // Botão "Seguinte"
     document.getElementById('pagina-seguinte').addEventListener('click', () => {
-        const total = Math.ceil(eventosFiltrados.length / eventosPorPagina); // Calcula total de páginas
+        const total = Math.ceil(eventosFiltrados.length / eventosPorPagina); 
         if (paginaAtual < total) { 
             paginaAtual++; 
             renderizarEventos(document.querySelector('.botao-vista.active').dataset.view); 
@@ -355,32 +427,26 @@ async function initCalendario() {
         }
     });
 
-    // 5. Configuração da Vista (Lista vs Grelha)
-    // Adiciona o clique aos dois botões de vista
+    // E. Configuração da Troca de Vista (Lista vs Grelha)
     document.querySelectorAll('.botao-vista').forEach(btn => {
         btn.addEventListener('click', function() {
-            // Remove a classe 'active' de todos os botões
+            // Remove a classe 'active' de todos e adiciona apenas ao clicado
             document.querySelectorAll('.botao-vista').forEach(b => b.classList.remove('active'));
-            // Adiciona 'active' apenas ao botão clicado
             this.classList.add('active');
-            // Redesenha os eventos com o novo formato ('list' ou 'grid')
+            // Redesenha usando o tipo de vista guardado no atributo data-view
             renderizarEventos(this.dataset.view);
         });
     });
 }
+
 // 2. Inicializador da Página INICIAL (INDEX)
 async function initHomepage() {
-const container = document.getElementById('container-proximos-index');
+    const container = document.getElementById('container-proximos-index');
     if (!container) return;
 
     try {
-        // TRUQUE: Para a Home, carregamos APENAS 2 ligas principais para não bloquear a API
-        // Se tentarmos carregar todas, a API bloqueia e o site fica a carregar infinitamente.
-        const idsDestaque = [
-            '4328', // Premier League
-            '4387'  // NBA
-        ];
-
+        // Tenta carregar ligas principais para a Home
+        const idsDestaque = ['4328', '4387']; // Premier League e NBA
         const promises = idsDestaque.map(id => buscarProximosDaLiga(id));
         const results = await Promise.all(promises);
         
@@ -394,26 +460,74 @@ const container = document.getElementById('container-proximos-index');
             return dataA - dataB;
         });
 
-        // Pegar Top 3
         const top3 = futuros.slice(0, 3);
 
         if (top3.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#666;">Não há eventos próximos agendados nas ligas em destaque.</p>';
+            // Se a API retornar vazio, lança erro para ativar o modo de segurança
+            throw new Error("Sem eventos ou API bloqueada"); 
         } else {
             container.innerHTML = top3.map(evento => criarCartaoEvento(evento, 'list')).join('');
         }
+
     } catch (erro) {
-        // Se der erro, remove o loading e mostra mensagem
-        container.innerHTML = '<p style="text-align:center;">Não foi possível carregar os eventos de destaque.</p>';
-        console.error(erro);
+        console.warn("API Indisponível. A ativar Modo de Segurança (Dados de Exemplo).");
+        
+        // --- DADOS DE EXEMPLO (MODO DE SEGURANÇA) ---
+        // Garante que o site nunca fica vazio
+        const amanha = new Date();
+        amanha.setDate(amanha.getDate() + 1);
+        const dataFormatada = amanha.toISOString().split('T')[0];
+
+        const eventosExemplo = [
+            {
+                idEvent: 'demo1',
+                strEvent: 'Sporting CP vs SL Benfica',
+                strHomeTeam: 'Sporting CP',
+                strAwayTeam: 'SL Benfica',
+                dateEvent: dataFormatada,
+                strTime: '20:30:00',
+                strSport: 'Soccer',
+                strLeague: 'Liga Portugal',
+                strVenue: 'Estádio José Alvalade',
+                intHomeScore: null,
+                intAwayScore: null
+            },
+            {
+                idEvent: 'demo2',
+                strEvent: 'Lakers vs Warriors',
+                strHomeTeam: 'Lakers',
+                strAwayTeam: 'Warriors',
+                dateEvent: dataFormatada,
+                strTime: '01:00:00',
+                strSport: 'Basketball',
+                strLeague: 'NBA',
+                strVenue: 'Crypto.com Arena',
+                intHomeScore: null,
+                intAwayScore: null
+            },
+            {
+                idEvent: 'demo3',
+                strEvent: 'Man City vs Liverpool',
+                strHomeTeam: 'Man City',
+                strAwayTeam: 'Liverpool',
+                dateEvent: dataFormatada,
+                strTime: '15:00:00',
+                strSport: 'Soccer',
+                strLeague: 'Premier League',
+                strVenue: 'Etihad Stadium',
+                intHomeScore: null,
+                intAwayScore: null
+            }
+        ];
+        
+        container.innerHTML = eventosExemplo.map(evento => criarCartaoEvento(evento, 'list')).join('');
     }
 }
 
 // --- ARRANQUE GLOBAL DA APLICAÇÃO ---
 // Este código corre assim que a página carrega
 document.addEventListener('DOMContentLoaded', () => {
-    // Roteamento Simples:
-    // Verifica se existe um elemento específico para saber em que página estamos
-if (document.getElementById('container-eventos')) initCalendario();
-if (document.getElementById('container-proximos-index')) initHomepage();
+    // Verifica qual página está aberta e inicia a função correta
+    if (document.getElementById('container-eventos')) initCalendario();
+    if (document.getElementById('container-proximos-index')) initHomepage();
 });
