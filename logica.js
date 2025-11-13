@@ -1,6 +1,37 @@
-// Renomeado de script.js para logica.js
-const API_KEY = '123'; // API Key gratuita para testes
+// logica.js - Versão com Ligas Dinâmicas e Expandidas
+
+const API_KEY = '123'; // Chave gratuita
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
+const SEASON = '2024-2025'; // Época atual
+
+// --- CONFIGURAÇÃO DAS LIGAS ---
+// Aqui adicionamos ou removemos ligas conforme necessário.
+// IDs obtidos da TheSportsDB.
+const configLigas = {
+    'football': [
+        { id: '4344', nome: 'Liga Portugal' },
+        { id: '4328', nome: 'Premier League (Inglaterra)' },
+        { id: '4335', nome: 'La Liga (Espanha)' },
+        { id: '4332', nome: 'Serie A (Itália)' },
+        { id: '4331', nome: 'Bundesliga (Alemanha)' },
+        { id: '4480', nome: 'UEFA Champions League' }
+    ],
+    'basketball': [
+        { id: '4387', nome: 'NBA' },
+        { id: '4546', nome: 'EuroLeague' },
+        { id: '4388', nome: 'NBA G League' } // Exemplo adicional
+    ],
+    'volleyball': [
+        { id: '5616', nome: 'CEV Champions League' }
+    ]
+};
+
+// Mapeamento de nomes para a API (strSport)
+const sportMap = {
+    'football': 'Soccer',
+    'basketball': 'Basketball',
+    'volleyball': 'Volleyball'
+};
 
 // Estado da aplicação
 let paginaAtual = 1;
@@ -8,23 +39,10 @@ let eventosPorPagina = 12;
 let todosEventos = [];
 let eventosFiltrados = [];
 
-// Mapeamento de desportos para IDs da API
-const idsDesportos = {
-    'football': '4328',      // Soccer/Football
-    'basketball': '4387',    // Basketball
-    'volleyball': '4385'     // Volleyball
-};
+// --- FUNÇÕES AUXILIARES ---
 
-// Mapeamento de ligas
-const idsLigas = {
-    'premier': '4328',       // Premier League
-    'liga': '4344',          // Liga Portugal
-    'nba': '4387',           // NBA
-    'champions': '4480'      // UEFA Champions League
-};
-
-// Função para formatar data
 function formatarData(dateStr) {
+    if (!dateStr) return { day: '--', month: '--' };
     const date = new Date(dateStr);
     const day = date.getDate().toString().padStart(2, '0');
     const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -32,89 +50,102 @@ function formatarData(dateStr) {
     return { day, month };
 }
 
-// Função para formatar hora
 function formatarHora(timeStr) {
     if (!timeStr) return 'A definir';
     return timeStr.substring(0, 5);
 }
 
-// Função para obter ícone do desporto
-function obterIconeDesporto(sport) {
-    const icons = {
-        'Soccer': 'fa-futbol',
-        'Basketball': 'fa-basketball-ball',
-        'Volleyball': 'fa-volleyball-ball'
-    };
-    return icons[sport] || 'fa-calendar';
+function obterIconeDesporto(sportName) {
+    // Normaliza para minúsculas para comparar
+    const s = (sportName || '').toLowerCase();
+    if (s.includes('soccer') || s.includes('football')) return 'fa-futbol';
+    if (s.includes('basketball') || s.includes('nba')) return 'fa-basketball-ball';
+    if (s.includes('volleyball')) return 'fa-volleyball-ball';
+    return 'fa-calendar-alt';
 }
 
-// Função para buscar eventos da próxima semana por liga
-async function buscarEventosProximosPorLiga(leagueId) {
+// --- LÓGICA DE INTERFACE (UI) ---
+
+// Função que preenche o Dropdown de Ligas com base no Desporto selecionado
+function atualizarDropdownLigas() {
+    const selectDesporto = document.getElementById('desporto');
+    const selectLiga = document.getElementById('liga');
+    const desportoSelecionado = selectDesporto.value;
+
+    // Limpar opções atuais (mantendo apenas a opção "Todas")
+    selectLiga.innerHTML = '<option value="all">Todas as Ligas</option>';
+
+    if (desportoSelecionado === 'all') {
+        // Se "Todos os Desportos", podemos mostrar TODAS as ligas misturadas ou deixar vazio
+        // Aqui vou adicionar todas agrupadas para facilitar
+        Object.keys(configLigas).forEach(sport => {
+            configLigas[sport].forEach(liga => {
+                const option = document.createElement('option');
+                option.value = liga.id;
+                option.textContent = liga.nome;
+                selectLiga.appendChild(option);
+            });
+        });
+    } else {
+        // Adiciona apenas as ligas do desporto selecionado
+        const ligas = configLigas[desportoSelecionado];
+        if (ligas) {
+            ligas.forEach(liga => {
+                const option = document.createElement('option');
+                option.value = liga.id;
+                option.textContent = liga.nome;
+                selectLiga.appendChild(option);
+            });
+        }
+    }
+}
+
+// --- LÓGICA DE DADOS (API) ---
+
+async function buscarEventosPorEpoca(leagueId) {
     try {
-        const response = await fetch(`${BASE_URL}/${API_KEY}/eventsnextleague.php?id=${leagueId}`);
+        const response = await fetch(`${BASE_URL}/${API_KEY}/eventsseason.php?id=${leagueId}&s=${SEASON}`);
         const data = await response.json();
         return data.events || [];
     } catch (error) {
-        console.error('Erro ao buscar eventos próximos:', error);
+        console.error(`Erro liga ${leagueId}:`, error);
         return [];
     }
 }
 
-// --- NOVO ---
-// Função para buscar eventos passados por liga
-async function buscarEventosPassadosPorLiga(leagueId) {
-    try {
-        // A API gratuita 'eventspastleague.php' retorna os últimos 15 eventos
-        const response = await fetch(`${BASE_URL}/${API_KEY}/eventspastleague.php?id=${leagueId}`);
-        const data = await response.json();
-        return data.events || [];
-    } catch (error) {
-        console.error('Erro ao buscar eventos passados:', error);
-        return [];
-    }
-}
-
-// --- MODIFICADO ---
-// Função para buscar todos os eventos (próximos E passados)
 async function buscarTodosEventos() {
     const events = [];
-    
-    // Buscar eventos das principais ligas (IDs definidos em idsLigas)
-    const leagues = Object.values(idsLigas);
-    
-    for (const leagueId of leagues) {
-        // Buscar próximos eventos
-        const proximosEventos = await buscarEventosProximosPorLiga(leagueId);
-        events.push(...proximosEventos);
-        
-        // Buscar eventos passados (para mostrar resultados)
-        const eventosPassados = await buscarEventosPassadosPorLiga(leagueId);
-        events.push(...eventosPassados);
-    }
-    
-    // Remover duplicados (caso a API retorne algum)
-    const eventosUnicos = Array.from(new Map(events.map(e => [e.idEvent, e])).values());
+    // Reunir todos os IDs de todas as ligas configuradas
+    let todosIDs = [];
+    Object.values(configLigas).forEach(lista => {
+        lista.forEach(item => todosIDs.push(item.id));
+    });
 
-    // Ordenar por data (mais recente primeiro)
-    return eventosUnicos.sort((a, b) => {
-        return new Date(b.dateEvent + 'T' + b.strTime) - new Date(a.dateEvent + 'T' + a.strTime);
+    // Nota: A API Grátis pode bloquear se fizermos 20 pedidos ao mesmo tempo. 
+    const promises = todosIDs.map(id => buscarEventosPorEpoca(id));
+    const results = await Promise.all(promises);
+    
+    results.forEach(leagueEvents => {
+        if(leagueEvents) events.push(...leagueEvents);
+    });
+    
+    // Remover duplicados
+    const uniqueEvents = Array.from(new Map(events.map(e => [e.idEvent, e])).values());
+
+    // Ordenar: Mais recentes/futuros primeiro
+    return uniqueEvents.sort((a, b) => {
+        return new Date(a.dateEvent + 'T' + (a.strTime || '00:00')) - new Date(b.dateEvent + 'T' + (b.strTime || '00:00'));
     });
 }
 
-// --- MODIFICADO ---
-// Função para criar card de evento
 function criarCartaoEvento(event, viewType = 'list') {
     const { day, month } = formatarData(event.dateEvent);
     const time = formatarHora(event.strTime);
     const sportIcon = obterIconeDesporto(event.strSport);
-
-    // --- LÓGICA DE RESULTADO ---
-    // Verifica se o jogo já tem resultado (pontuação não é nula)
     const temResultado = event.intHomeScore !== null && event.intAwayScore !== null;
+    
     let linkResultado = '';
-
     if (temResultado) {
-        // Adiciona a seta que leva à página de resultados
         linkResultado = `
             <a href="resultados.html?id=${event.idEvent}" class="link-resultado" title="Ver Resultado">
                 <i class="fas fa-chevron-right"></i>
@@ -122,6 +153,8 @@ function criarCartaoEvento(event, viewType = 'list') {
         `;
     }
     
+    const titulo = event.strEvent || `${event.strHomeTeam} vs ${event.strAwayTeam}`;
+
     if (viewType === 'list') {
         return `
             <div class="cartao-evento">
@@ -130,7 +163,7 @@ function criarCartaoEvento(event, viewType = 'list') {
                     <span class="mes">${month}</span>
                 </div>
                 <div class="info-evento">
-                    <h3>${event.strEvent || event.strHomeTeam + ' vs ' + event.strAwayTeam}</h3>
+                    <h3>${titulo}</h3>
                     <p><i class="fas ${sportIcon}"></i> ${event.strSport} - ${event.strLeague}</p>
                     <p><i class="far fa-clock"></i> ${time} ${event.strVenue ? '| ' + event.strVenue : ''}</p>
                 </div>
@@ -138,7 +171,6 @@ function criarCartaoEvento(event, viewType = 'list') {
             </div>
         `;
     } else {
-        // Vista em Grelha
         return `
             <div class="cartao-evento-grelha">
                 <div class="cabecalho-evento">
@@ -146,7 +178,7 @@ function criarCartaoEvento(event, viewType = 'list') {
                     <span class="hora-evento">${time}</span>
                 </div>
                 <div class="corpo-evento">
-                    <h3>${event.strEvent || event.strHomeTeam + ' vs ' + event.strAwayTeam}</h3>
+                    <h3>${titulo}</h3>
                     <p><i class="fas ${sportIcon}"></i> ${event.strSport}</p>
                     <p class="liga">${event.strLeague}</p>
                 </div>
@@ -156,18 +188,16 @@ function criarCartaoEvento(event, viewType = 'list') {
     }
 }
 
-// Função para renderizar eventos
 function renderizarEventos(viewType = 'list') {
-    const container = document.getElementById('container-eventos'); // ID modificado
+    const container = document.getElementById('container-eventos');
     
     if (eventosFiltrados.length === 0) {
         container.innerHTML = `
             <div class="sem-eventos">
                 <i class="fas fa-calendar-times"></i>
-                <p>Nenhum evento encontrado com os filtros aplicados.</p>
+                <p>Nenhum evento encontrado. Tenta limpar os filtros.</p>
             </div>
         `;
-        // Certifica-se que a paginação está correta
         atualizarPaginacao();
         return;
     }
@@ -176,50 +206,50 @@ function renderizarEventos(viewType = 'list') {
     const end = start + eventosPorPagina;
     const eventsToShow = eventosFiltrados.slice(start, end);
     
-    const containerClass = viewType === 'list' ? 'lista-eventos' : 'grelha-eventos'; // Classes modificadas
-    container.className = containerClass;
-    
+    container.className = viewType === 'list' ? 'lista-eventos' : 'grelha-eventos';
     container.innerHTML = eventsToShow.map(event => criarCartaoEvento(event, viewType)).join('');
     
     atualizarPaginacao();
 }
 
-// Função para atualizar paginação
 function atualizarPaginacao() {
     const totalPages = Math.ceil(eventosFiltrados.length / eventosPorPagina) || 1;
-    document.getElementById('pagina-atual').textContent = paginaAtual; // ID modificado
-    document.getElementById('paginas-totais').textContent = totalPages; // ID modificado
+    const elPagAtual = document.getElementById('pagina-atual');
+    const elPagTotal = document.getElementById('paginas-totais');
     
-    document.getElementById('pagina-anterior').disabled = paginaAtual === 1; // ID modificado
-    document.getElementById('pagina-seguinte').disabled = paginaAtual === totalPages; // ID modificado
+    if(elPagAtual) elPagAtual.textContent = paginaAtual;
+    if(elPagTotal) elPagTotal.textContent = totalPages;
+    
+    const btnAnt = document.getElementById('pagina-anterior');
+    const btnSeg = document.getElementById('pagina-seguinte');
+    
+    if(btnAnt) btnAnt.disabled = paginaAtual === 1;
+    if(btnSeg) btnSeg.disabled = paginaAtual >= totalPages;
 }
 
-// Função para aplicar filtros
 function aplicarFiltros() {
-    const sport = document.getElementById('desporto').value; // ID modificado
-    const league = document.getElementById('liga').value; // ID modificado
-    const date = document.getElementById('data').value; // ID modificado
-    const team = document.getElementById('equipa').value.toLowerCase(); // ID modificado
+    const sport = document.getElementById('desporto').value;
+    const leagueID = document.getElementById('liga').value; // Agora usamos o ID diretamente
+    const date = document.getElementById('data').value;
+    const team = document.getElementById('equipa').value.toLowerCase();
     
     eventosFiltrados = todosEventos.filter(event => {
+        // Filtro Desporto
         if (sport !== 'all') {
-            const sportMap = {
-                'football': 'Soccer',
-                'basketball': 'Basketball',
-                'volleyball': 'Volleyball'
-            };
             if (event.strSport !== sportMap[sport]) return false;
         }
         
-        if (league !== 'all') {
-            // Usamos o ID da liga que guardámos
-            if (event.idLeague !== idsLigas[league]) return false;
+        // Filtro Liga (Comparando ID)
+        if (leagueID !== 'all') {
+            if (event.idLeague !== leagueID) return false;
         }
         
+        // Filtro Data
         if (date) {
             if (event.dateEvent !== date) return false;
         }
         
+        // Filtro Equipa
         if (team) {
             const eventName = (event.strEvent || '').toLowerCase();
             const homeTeam = (event.strHomeTeam || '').toLowerCase();
@@ -228,52 +258,64 @@ function aplicarFiltros() {
                 return false;
             }
         }
-        
         return true;
     });
     
     paginaAtual = 1;
-    renderizarEventos(document.querySelector('.botao-vista.active').dataset.view);
+    const activeBtn = document.querySelector('.botao-vista.active');
+    renderizarEventos(activeBtn ? activeBtn.dataset.view : 'list');
 }
 
-// Função para limpar filtros
 function limparFiltros() {
-    document.getElementById('desporto').value = 'all'; // ID modificado
-    document.getElementById('liga').value = 'all'; // ID modificado
-    document.getElementById('data').value = ''; // ID modificado
-    document.getElementById('equipa').value = ''; // ID modificado
+    document.getElementById('desporto').value = 'all';
+    // Atualizar dropdown para mostrar tudo de volta
+    atualizarDropdownLigas();
+    document.getElementById('liga').value = 'all';
+    document.getElementById('data').value = '';
+    document.getElementById('equipa').value = '';
     
     eventosFiltrados = [...todosEventos];
     paginaAtual = 1;
-    renderizarEventos(document.querySelector('.botao-vista.active').dataset.view);
+    renderizarEventos('list');
 }
 
 // Inicialização
 async function initCalendario() {
-    // Mostrar loading
-    const container = document.getElementById('container-eventos'); // ID modificado
+    const container = document.getElementById('container-eventos');
+    if (!container) return;
+    
     container.innerHTML = `
         <div class="carregamento">
             <i class="fas fa-spinner fa-spin"></i>
-            <p>A carregar eventos...</p>
+            <p>A carregar eventos da época ${SEASON}...</p>
         </div>
     `;
     
-    // Buscar eventos
+    // 1. Preencher o dropdown de ligas inicial
+    atualizarDropdownLigas();
+
+    // 2. Buscar eventos
     todosEventos = await buscarTodosEventos();
     eventosFiltrados = [...todosEventos];
     
-    // Renderizar eventos
     renderizarEventos('list');
     
-    // Event listeners com IDs modificados
+    // Listeners
     document.getElementById('aplicar-filtros').addEventListener('click', aplicarFiltros);
     document.getElementById('limpar-filtros').addEventListener('click', limparFiltros);
     
+    // --- A MÁGICA ACONTECE AQUI ---
+    // Quando mudar o desporto, atualiza a lista de ligas
+    document.getElementById('desporto').addEventListener('change', () => {
+        atualizarDropdownLigas();
+    });
+    
+    // Paginação e Vistas
     document.getElementById('pagina-anterior').addEventListener('click', () => {
         if (paginaAtual > 1) {
             paginaAtual--;
-            renderizarEventos(document.querySelector('.botao-vista.active').dataset.view);
+            const view = document.querySelector('.botao-vista.active').dataset.view;
+            renderizarEventos(view);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     });
@@ -282,13 +324,13 @@ async function initCalendario() {
         const totalPages = Math.ceil(eventosFiltrados.length / eventosPorPagina);
         if (paginaAtual < totalPages) {
             paginaAtual++;
-            renderizarEventos(document.querySelector('.botao-vista.active').dataset.view);
+            const view = document.querySelector('.botao-vista.active').dataset.view;
+            renderizarEventos(view);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     });
     
-    // View toggle
-    document.querySelectorAll('.botao-vista').forEach(btn => { // Classe modificada
+    document.querySelectorAll('.botao-vista').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.botao-vista').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
@@ -297,33 +339,6 @@ async function initCalendario() {
     });
 }
 
-// Iniciar quando a página carregar
-// Verificamos se estamos na página do calendário
 if (document.getElementById('container-eventos')) {
     document.addEventListener('DOMContentLoaded', initCalendario);
 }
-
-// FAQ accordion (para página de contactos)
-document.addEventListener('DOMContentLoaded', () => {
-    const faqQuestions = document.querySelectorAll('.pergunta-faq'); // Classe modificada
-    
-    faqQuestions.forEach(question => {
-        question.addEventListener('click', () => {
-            const answer = question.nextElementSibling;
-            const icon = question.querySelector('i');
-            
-            answer.classList.toggle('active');
-            icon.style.transform = answer.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
-        });
-    });
-    
-    // Form de contacto
-    const contactForm = document.getElementById('form-contacto'); // ID modificado
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('Mensagem enviada com sucesso! Entraremos em contacto em breve.');
-            contactForm.reset();
-        });
-    }
-});
