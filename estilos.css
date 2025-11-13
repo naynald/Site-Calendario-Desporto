@@ -333,6 +333,7 @@ section h2 {
 .conteudo-hero h2 { /* (index.html) */
     font-size: 3rem;
     margin-bottom: 1rem;
+    color: var(--cor-branca);
 }
 
 .conteudo-hero p { /* (index.html) */
