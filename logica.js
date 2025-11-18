@@ -284,7 +284,7 @@ function aplicarFiltros() {
         return true;
     });
     
-    // 2. AQUI ESTÁ A CORREÇÃO: Reordenamos a lista filtrada!
+    // 2. Reordenamos a lista filtrada!
     // Assim, mesmo depois de filtrar, o foco continua no "Hoje".
     eventosFiltrados = ordenarPorProximidade(tempEventos);
     
