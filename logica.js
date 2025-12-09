@@ -2,8 +2,8 @@
 const API_KEY = '123'; // A nossa chave grátis
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
 const SEASON = '2025-2026'; // A época que estamos a carregar
-const CACHE_KEY = 'sportcalendar_cache_v1'; // O nome da nossa "gaveta" no browser
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 Horas (para não massacrar a API)
+const CACHE_KEY = 'sportcalendar_cache_v1'; // O nome da nossa cache
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 Horas
 
 // A nossa lista de ligas. Se quisermos mais, é só adicionar aqui o ID e o Nome.
 const configLigas = {
@@ -35,10 +35,10 @@ const sportMap = {
 // Aqui guardamos o que está a acontecer no momento
 let paginaAtual = 1;
 let eventosPorPagina = 12;
-let todosEventos = [];    // A lista gigante com tudo
+let todosEventos = [];    // A lista com tudo
 let eventosFiltrados = []; // O que o utilizador está a ver agora
 
-// --- SISTEMA DE CACHE (O nosso salvador) ---
+// --- SISTEMA DE CACHE ---
 // Isto serve para guardar os dados no computador do utilizador.
 
 function guardarEmCache(dados) {
@@ -47,7 +47,7 @@ function guardarEmCache(dados) {
         eventos: dados
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(pacote));
-    console.log("📦 Guardámos tudo no bolso (Cache).");
+    console.log("Guardámos cache.");
 }
 
 function lerDoCache() {
@@ -57,17 +57,17 @@ function lerDoCache() {
     const pacote = JSON.parse(dadosGuardados);
     const agora = new Date().getTime();
 
-    // Se os dados tiverem menos de 24h, usamos!
+    // Se os dados tiverem menos de 24h, usamos-os
     if (agora - pacote.timestamp < CACHE_DURATION) {
-        console.log("⚡ A usar dados da memória (Rápido!)");
+        console.log("A usar dados da cache (Rápido!)");
         return pacote.eventos;
     }
     
-    console.log("⚠️ Os dados estão velhos. Vamos buscar novos à API.");
+    console.log("Os dados estão velhos. Vamos buscar novos à API.");
     return null; 
 }
 
-// --- FUNÇÕES DE AJUDA (Formatação e Ordenação) ---
+// --- FUNÇÕES DE AJUDA ---
 
 function formatarData(dateStr) {
     if (!dateStr) return { day: '--', month: '--' };
@@ -90,7 +90,7 @@ function obterIconeDesporto(sportName) {
     return 'fa-calendar-alt';
 }
 
-// --- NOVA FUNÇÃO DE ORDENAÇÃO ---
+// --- FUNÇÃO DE ORDENAÇÃO ---
 // Criámos esta função para garantir que a ordem é SEMPRE a mesma:
 // Jogos perto de "HOJE" aparecem primeiro (seja ontem ou amanhã).
 function ordenarPorProximidade(lista) {
@@ -142,7 +142,7 @@ function atualizarDropdownLigas() {
     }
 }
 
-// --- O CORAÇÃO DA API (Busca de Dados) ---
+// --- O CORAÇÃO DA API ---
 
 async function buscarEventosPorEpoca(leagueId) {
     try {
@@ -266,7 +266,7 @@ function atualizarPaginacao() {
     if(btnSeg) btnSeg.disabled = paginaAtual >= total;
 }
 
-// --- FILTROS (CORRIGIDOS PARA MANTER A ORDEM) ---
+// --- FILTROS ---
 
 function aplicarFiltros() {
     // Vamos buscar o que o utilizador escolheu
@@ -284,7 +284,7 @@ function aplicarFiltros() {
         return true;
     });
     
-    // 2. Reordenamos a lista filtrada!
+    // 2. Reordenamos a lista filtrada
     // Assim, mesmo depois de filtrar, o foco continua no "Hoje".
     eventosFiltrados = ordenarPorProximidade(tempEventos);
     
@@ -308,7 +308,7 @@ function limparFiltros() {
     renderizarEventos('list');
 }
 
-// --- ARRANQUE (Onde tudo começa) ---
+// --- ARRANQUE ---
 
 async function initCalendario() {
     const container = document.getElementById('container-eventos');
