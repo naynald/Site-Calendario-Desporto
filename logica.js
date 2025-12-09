@@ -2,7 +2,7 @@
 const API_KEY = '123'; // A nossa chave grátis
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
 const SEASON = '2025-2026'; // A época que estamos a carregar
-const CACHE_KEY = 'sportcalendar_cache_v1'; // O nome da nossa cache
+const CACHE_KEY = 'sportcalendar_cache_v2'; // O nome da nossa cache
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 Horas
 
 // A nossa lista de ligas. Se quisermos mais, é só adicionar aqui o ID e o Nome.
@@ -144,12 +144,26 @@ function atualizarDropdownLigas() {
 
 // --- O CORAÇÃO DA API ---
 
-async function buscarEventosPorEpoca(leagueId) {
+async function buscarEventosRecentes(leagueId) {
+    // Agora buscamos os "Próximos" (Next) e os "Passados" (Past)
+    // para garantir que temos os jogos DE AGORA
+    const urlNext = `${BASE_URL}/${API_KEY}/eventsnextleague.php?id=${leagueId}`;
+    const urlPast = `${BASE_URL}/${API_KEY}/eventspastleague.php?id=${leagueId}`;
+
     try {
-        const response = await fetch(`${BASE_URL}/${API_KEY}/eventsseason.php?id=${leagueId}&s=${SEASON}`);
-        const data = await response.json();
-        return data.events || [];
-    } catch (error) { return []; }
+        const [resNext, resPast] = await Promise.all([
+            fetch(urlNext).then(r => r.json()),
+            fetch(urlPast).then(r => r.json())
+        ]);
+
+        const nextEvents = resNext.events || [];
+        const pastEvents = resPast.events || [];
+
+        return [...nextEvents, ...pastEvents];
+    } catch (error) {
+        console.warn(`Erro na liga ${leagueId}`, error);
+        return []; 
+    }
 }
 
 async function buscarTodosEventos() {
@@ -171,7 +185,7 @@ async function buscarTodosEventos() {
         if(statusLoading) statusLoading.textContent = `A carregar ${liga.nome} (${index + 1}/${todasLigas.length})...`;
         
         try {
-            const leagueEvents = await buscarEventosPorEpoca(liga.id);
+            const leagueEvents = await buscarEventosRecentes(liga.id);
             if (leagueEvents) events.push(...leagueEvents);
             
             // Esperamos 1.5 segundos entre cada pedido!
