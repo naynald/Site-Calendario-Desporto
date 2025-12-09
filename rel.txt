@@ -1,0 +1,16 @@
+ter capa
+titulo projeto elementos do grupo
+
+introdução
+. Objetivo do projeto
+. Porque escolhemos este projeto
+. Identifcar as tecnologias usadas
+. Requesitos funcionais e não funcionais
+Design
+. Requisitos implementados e nao implementados
+. Mapa site e descrever as principais paginas
+Parte teste??
+. W3C validar tudo
+
+
+Estrutura de pastas e ficheiros

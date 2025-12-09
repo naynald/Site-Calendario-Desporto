@@ -59,11 +59,11 @@ function lerDoCache() {
 
     // Se os dados tiverem menos de 24h, usamos-os
     if (agora - pacote.timestamp < CACHE_DURATION) {
-        console.log("A usar dados da cache (Rápido!)");
+        console.log("A usar dados da cache.");
         return pacote.eventos;
     }
     
-    console.log("Os dados estão velhos. Vamos buscar novos à API.");
+    console.log("Os dados estão velhos.");
     return null; 
 }
 

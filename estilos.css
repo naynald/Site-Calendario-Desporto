@@ -2,10 +2,10 @@
 /* Variáveis CSS (:root) para centralizar as cores principais
    e facilitar a manutenção do tema. */
 :root {
-    --cor-primaria: #e94560; /* Vermelho/Rosa */
+    --cor-primaria: #e94560; 
     --cor-primaria-hover: #d63447;
-    --cor-fundo-dark: #1a1a2e; /* Azul Escuro */
-    --cor-fundo-light: #f8f9fa; /* Cinza Claro */
+    --cor-fundo-dark: #1a1a2e; 
+    --cor-fundo-light: #f8f9fa;
     --cor-texto: #333;
     --cor-texto-claro: #ddd;
     --cor-borda: #e9ecef;
