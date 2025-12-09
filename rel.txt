@@ -14,3 +14,7 @@ Parte teste??
 
 
 Estrutura de pastas e ficheiros
+
+
+Anexos
+Estratos de codigo que achamos importantes
