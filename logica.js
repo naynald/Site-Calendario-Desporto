@@ -128,7 +128,7 @@ function resolveBets(event) {
     }
 }
 
-// --- RESULT SIMULATION (GAMBLING ENABLER) ---
+// --- Simular Resultado ---
 // Como muitos jogos são no futuro, adicionamos um botão para "Simular" um resultado
 // e assim permitir testar o sistema de apostas.
 function simularResultado(eventId) {
