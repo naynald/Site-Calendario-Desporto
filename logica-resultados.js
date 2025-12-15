@@ -1,7 +1,17 @@
 // --- LÓGICA PARA A PÁGINA DE RESULTADOS ---
 
-const API_KEY = '123'; // API Key gratuita para testes (a mesma do script principal)
+const API_KEY = '123'; 
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
+const WALLET_KEY = 'sportcalendar_wallet';
+
+function updateWalletUI() {
+    const bal = localStorage.getItem(WALLET_KEY) || 100;
+    const els = document.querySelectorAll('#user-balance');
+    els.forEach(el => el.textContent = bal);
+    const containers = document.querySelectorAll('#wallet-container');
+    containers.forEach(c => c.style.display = 'flex');
+}
+
 
 // Função para buscar detalhes de um evento específico pelo ID
 async function buscarDetalheEvento(idEvento) {
@@ -89,4 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 4. Renderizar o resultado
     renderizarResultado(evento);
+    
+    // 5. Init Wallet
+    updateWalletUI();
 });

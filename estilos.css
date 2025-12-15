@@ -10,6 +10,8 @@
     --cor-texto-claro: #ddd;
     --cor-borda: #e9ecef;
     --cor-branca: #fff;
+    --cor-sucesso: #28a745;
+    --cor-warning: #ffc107;
 }
 
 /* --- Reset Básico --- */
@@ -64,6 +66,7 @@ header .conteudo {
 .navegacao ul {
     display: flex;
     list-style: none;
+    align-items: center; /* Alinha items verticalmente */
 }
 
 .navegacao ul li {
@@ -95,12 +98,6 @@ header .conteudo {
 }
 
 /* --- Botões (Estilos Base) --- */
-/* Estilo base partilhado por:
-   .botao (index.html, contactos.html)
-   .botao-filtro (calendario.html)
-   .botao-pagina (calendario.html)
-   .botao-secundario (resultados.html)
-*/
 .botao,
 .botao-filtro,
 .botao-pagina,
@@ -148,11 +145,6 @@ header .conteudo {
 }
 
 /* --- Formulários (Estilos Base) --- */
-/* Estilo base para inputs e selects. Usado em:
-   .grupo-form (contactos.html)
-   .grupo-filtro (calendario.html)
-   .form-newsletter (footer em todas as páginas)
-*/
 .grupo-form input,
 .grupo-form textarea,
 .grupo-filtro select,
@@ -224,7 +216,6 @@ section h2 {
 /* --- Cartões (Cards) --- */
 
 /* Cartão de Desporto / Funcionalidade (index.html) */
-/* Estilo para .cartao-desporto e .funcionalidade. */
 .cartao-desporto,
 .funcionalidade {
     background-color: var(--cor-fundo-light);
@@ -246,15 +237,14 @@ section h2 {
     color: var(--cor-fundo-dark);
 }
 
-.icone-desporto, /* (index.html) */
-.funcionalidade i { /* (index.html) */
+.icone-desporto,
+.funcionalidade i {
     font-size: 3rem;
     color: var(--cor-primaria);
     margin-bottom: 1rem;
 }
 
 /* Cartão de Evento - Vista Lista (index.html, calendario.html) */
-/* Estilo partilhado por .cartao-evento-proximo (index.html) e .cartao-evento (calendario.html). */
 .cartao-evento-proximo,
 .cartao-evento {
     display: flex;
@@ -272,7 +262,6 @@ section h2 {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo partilhado por .data-evento-proximo (index.html) e .data-evento (calendario.html). */
 .data-evento-proximo,
 .data-evento {
     background-color: var(--cor-primaria);
@@ -298,7 +287,6 @@ section h2 {
     text-transform: uppercase;
 }
 
-/* Estilo partilhado por .info-evento-proximo (index.html) e .info-evento (calendario.html). */
 .info-evento-proximo,
 .info-evento {
     padding: 1.5rem;
@@ -309,6 +297,7 @@ section h2 {
 .info-evento h3 {
     margin-bottom: 0.5rem;
     color: var(--cor-fundo-dark);
+    line-height: 1.2;
 }
 
 .info-evento-proximo p,
@@ -320,7 +309,7 @@ section h2 {
 }
 
 /* --- Página Inicial (index.html) --- */
-.hero { /* (index.html) */
+.hero { 
     background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)),
                 url('https://images.unsplash.com/photo-1459865264687-595d652de67e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
     background-size: cover;
@@ -330,36 +319,36 @@ section h2 {
     padding: 8rem 0;
 }
 
-.conteudo-hero h2 { /* (index.html) */
+.conteudo-hero h2 {
     font-size: 3rem;
     margin-bottom: 1rem;
     color: var(--cor-branca);
 }
 
-.conteudo-hero p { /* (index.html) */
+.conteudo-hero p {
     font-size: 1.2rem;
     max-width: 600px;
     margin: 0 auto 2rem;
 }
 
-.grelha-eventos-proximos { /* Grelha de eventos em index.html */
+.grelha-eventos-proximos {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-bottom: 3rem;
 }
 
-.botao-centro { /* (index.html) */
+.botao-centro {
     text-align: center;
 }
 
 /* --- Página Contactos (contactos.html) --- */
-.seccao-contactos { /* (contactos.html) */
+.seccao-contactos {
     padding: 5rem 0;
     background-color: var(--cor-branca);
 }
 
-.conteudo-contactos { /* (contactos.html) */
+.conteudo-contactos {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
@@ -371,7 +360,7 @@ section h2 {
     color: var(--cor-fundo-dark);
 }
 
-.item-contacto { /* (contactos.html) */
+.item-contacto {
     display: flex;
     margin-bottom: 2rem;
     gap: 1rem;
@@ -388,13 +377,13 @@ section h2 {
     color: var(--cor-fundo-dark);
 }
 
-/* FAQ (contactos.html) */
-.seccao-faq { /* (contactos.html) */
+/* FAQ */
+.seccao-faq {
     padding: 5rem 0;
     background-color: var(--cor-fundo-light);
 }
 
-.item-faq { /* (contactos.html) */
+.item-faq {
     margin-bottom: 1rem;
     border: 1px solid var(--cor-borda);
     border-radius: 8px;
@@ -402,7 +391,7 @@ section h2 {
     background-color: var(--cor-branca);
 }
 
-.pergunta-faq { /* (contactos.html) */
+.pergunta-faq {
     padding: 1.5rem;
     display: flex;
     justify-content: space-between;
@@ -420,42 +409,42 @@ section h2 {
     color: var(--cor-fundo-dark);
 }
 
-.resposta-faq { /* (contactos.html) */
+.resposta-faq {
     padding: 0 1.5rem;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s, padding 0.3s;
 }
 
-.resposta-faq.active { /* Esta classe é controlada por JS */
+.resposta-faq.active {
     padding: 0 1.5rem 1.5rem;
     max-height: 200px;
 }
 
 /* --- Página Calendário (calendario.html) --- */
-.filtros { /* (calendario.html) */
+.filtros {
     background-color: var(--cor-branca);
     padding: 2rem 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.container-filtros { /* (calendario.html) */
+.container-filtros {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     align-items: flex-end;
 }
 
-.grupo-filtro { /* (calendario.html) */
+.grupo-filtro {
     flex: 1;
     min-width: 200px;
 }
 
-.calendario { /* (calendario.html) */
+.calendario {
     padding: 3rem 0;
 }
 
-.cabecalho-calendario { /* (calendario.html) */
+.cabecalho-calendario {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -467,12 +456,12 @@ section h2 {
     margin-bottom: 0;
 }
 
-.opcoes-vista { /* (calendario.html) */
+.opcoes-vista {
     display: flex;
     gap: 0.5rem;
 }
 
-.botao-vista { /* (calendario.html) */
+.botao-vista {
     padding: 0.6rem 1rem;
     background-color: var(--cor-branca);
     border: 1px solid #ddd;
@@ -495,7 +484,7 @@ section h2 {
     border-color: var(--cor-primaria);
 }
 
-/* Link Seta (Resultado) - (calendario.html) */
+/* Link Seta (Resultado) */
 .link-resultado {
     display: flex;
     align-items: center;
@@ -513,13 +502,13 @@ section h2 {
 }
 
 /* Vista em Grelha (calendario.html) */
-.grelha-eventos { /* (calendario.html) */
+.grelha-eventos {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.5rem;
 }
 
-.cartao-evento-grelha { /* (calendario.html) */
+.cartao-evento-grelha {
     background-color: var(--cor-branca);
     border-radius: 8px;
     overflow: hidden;
@@ -534,7 +523,7 @@ section h2 {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-.cabecalho-evento { /* (calendario.html) */
+.cabecalho-evento {
     background-color: var(--cor-primaria);
     color: var(--cor-branca);
     padding: 1rem;
@@ -543,7 +532,7 @@ section h2 {
     align-items: center;
 }
 
-.corpo-evento { /* (calendario.html) */
+.corpo-evento {
     padding: 1.5rem;
     flex-grow: 1;
 }
@@ -562,7 +551,7 @@ section h2 {
     color: #666;
 }
 
-.link-resultado-grelha { /* (calendario.html) */
+.link-resultado-grelha {
     display: block;
     text-align: center;
     background-color: var(--cor-fundo-light);
@@ -577,7 +566,7 @@ section h2 {
     color: var(--cor-branca);
 }
 
-/* Paginação (calendario.html) */
+/* Paginação */
 .paginacao {
     display: flex;
     justify-content: center;
@@ -593,13 +582,13 @@ section h2 {
     color: var(--cor-fundo-dark);
 }
 
-/* Estados de Carregamento / Vazio (usado em calendario.html, resultados.html) */
+/* Estados de Carregamento / Vazio */
 .carregamento,
 .sem-eventos {
     text-align: center;
     padding: 3rem;
     color: #666;
-    grid-column: 1 / -1; /* Ocupa a grelha toda se estiver numa */
+    grid-column: 1 / -1;
 }
 
 .carregamento i,
@@ -618,18 +607,18 @@ section h2 {
 }
 
 /* --- Página Resultados (resultados.html) --- */
-.detalhe-resultado { /* (resultados.html) */
+.detalhe-resultado {
     padding: 3rem 0;
 }
 
-.cartao-resultado { /* (resultados.html) */
+.cartao-resultado {
     background-color: var(--cor-branca);
     border-radius: 8px;
     border: 1px solid var(--cor-borda);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.cabecalho-resultado { /* (resultados.html) */
+.cabecalho-resultado {
     padding: 2rem;
     border-bottom: 1px solid var(--cor-borda);
     display: flex;
@@ -644,7 +633,7 @@ section h2 {
     margin: 0;
 }
 
-.estado-jogo { /* (resultados.html) */
+.estado-jogo {
     font-weight: bold;
     padding: 0.3rem 0.8rem;
     border-radius: 4px;
@@ -657,14 +646,14 @@ section h2 {
     background-color: #6c757d;
 }
 
-.corpo-resultado { /* (resultados.html) */
+.corpo-resultado {
     padding: 2rem;
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 2rem;
 }
 
-.info-jogo p { /* (resultados.html) */
+.info-jogo p {
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -676,7 +665,7 @@ section h2 {
     text-align: center;
 }
 
-.placar { /* (resultados.html) */
+.placar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -690,7 +679,7 @@ section h2 {
     text-align: center;
 }
 
-.emblema-equipa { /* (resultados.html) */
+.emblema-equipa {
     max-height: 80px;
     margin-bottom: 1rem;
 }
@@ -702,7 +691,7 @@ section h2 {
     margin: 0 2rem;
 }
 
-.rodape-resultado { /* (resultados.html) */
+.rodape-resultado {
     padding: 1.5rem;
     text-align: center;
     border-top: 1px solid var(--cor-borda);
@@ -710,7 +699,6 @@ section h2 {
 
 
 /* --- Rodapé (Footer) (Todas as páginas) --- */
-/* O rodapé é usado em index.html, calendario.html, contactos.html, resultados.html. */
 footer {
     background-color: var(--cor-fundo-dark);
     color: var(--cor-branca);
@@ -789,9 +777,73 @@ footer {
     border-top: 1px solid #2d2d44;
 }
 
+/* --- GAMBLING UI (ADICIONADO) --- */
+.wallet-badge {
+    margin-left: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--cor-branca);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+.wallet-badge i { color: #fbbf24; }
+
+.apostas-container {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--cor-borda);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-aposta {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #ddd;
+    color: var(--cor-texto);
+    padding: 0.4rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.2s;
+    font-weight: 600;
+}
+
+.btn-aposta:hover:not(:disabled) {
+    border-color: var(--cor-primaria);
+    color: var(--cor-primaria);
+    background-color: #fce8eb;
+}
+
+.btn-aposta:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #eee;
+}
+
+.btn-simular {
+    font-size: 0.8rem;
+    color: #666;
+    background: transparent;
+    border: 1px solid #ccc;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
+}
+.btn-simular:hover {
+    color: #333;
+    border-color: #333;
+}
+
 
 /* --- Media Queries (Responsividade) --- */
-/* Ajustes para ecrãs menores (max-width: 768px). */
 @media (max-width: 768px) {
     header .conteudo {
         flex-direction: column;
@@ -799,31 +851,27 @@ footer {
     }
     
     .navegacao ul {
-        gap: 1rem;
-        justify-content: center;
         flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
     }
     
     .navegacao ul li {
-        margin-left: 0;
+        margin: 0 0.5rem;
     }
     
-    .conteudo-hero h2 { /* (index.html) */
-        font-size: 2.2rem;
+    .cartao-evento { 
+        flex-direction: column; 
     }
     
-    /* Grelhas (1 coluna) */
-    .conteudo-contactos, /* (contactos.html) */
-    .corpo-resultado, /* (resultados.html) */
-    .grelha-desportos, /* (index.html) */
-    .grelha-funcionalidades, /* (index.html) */
-    .grelha-eventos-proximos, /* (index.html) */
-    .grelha-eventos, /* (calendario.html) */
-    .conteudo-rodape { /* (Todas as páginas) */
-        grid-template-columns: 1fr;
+    .data-evento { 
+        flex-direction: row; 
+        gap: 1rem; 
+        padding: 0.5rem; 
+        width: 100%;
+        min-height: auto;
     }
-
-    /* Filtros (100% width - calendario.html) */
+    
     .container-filtros {
         flex-direction: column;
     }
@@ -833,16 +881,19 @@ footer {
         width: 100%;
     }
     
-    /* Layouts flex (1 coluna) */
-    .cabecalho-calendario, /* (calendario.html) */
-    .paginacao, /* (calendario.html) */
-    .placar { /* (resultados.html) */
+    .cabecalho-calendario, 
+    .paginacao,
+    .placar {
         flex-direction: column;
         gap: 1.5rem;
     }
     
     .placar .pontuacao {
         font-size: 2.5rem;
+        margin: 0;
+    }
+    
+    .wallet-badge {
         margin: 0;
     }
 }

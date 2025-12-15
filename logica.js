@@ -1,11 +1,15 @@
 // --- CONFIGURAÇÕES INICIAIS ---
-const API_KEY = '123'; // A nossa chave grátis
+const API_KEY = '123'; 
 const BASE_URL = 'https://www.thesportsdb.com/api/v1/json';
-const SEASON = '2025-2026'; // A época que estamos a carregar
-const CACHE_KEY = 'sportcalendar_cache_v2'; // O nome da nossa cache
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 Horas
+const CACHE_KEY = 'sportcalendar_cache_v3'; 
+const CACHE_DURATION = 24 * 60 * 60 * 1000; 
 
-// A nossa lista de ligas. Se quisermos mais, é só adicionar aqui o ID e o Nome.
+// --- Configuração da Carteira (Gambling) ---
+const WALLET_KEY = 'sportcalendar_wallet';
+const BETS_KEY = 'sportcalendar_bets';
+const INITIAL_BALANCE = 100;
+
+// Lista de Ligas
 const configLigas = {
     'football': [
         { id: '4344', nome: 'Liga Portugal' },
@@ -24,7 +28,6 @@ const configLigas = {
     ]
 };
 
-// Mapeamento para garantir que os nomes batem certo com o filtro
 const sportMap = {
     'football': 'Soccer',
     'basketball': 'Basketball',
@@ -32,43 +35,144 @@ const sportMap = {
 };
 
 // --- ESTADO DO SITE ---
-// Aqui guardamos o que está a acontecer no momento
 let paginaAtual = 1;
 let eventosPorPagina = 12;
-let todosEventos = [];    // A lista com tudo
-let eventosFiltrados = []; // O que o utilizador está a ver agora
+let todosEventos = [];    
+let eventosFiltrados = []; 
+
+// --- WALLET & BETTING SYSTEM ---
+
+function getWalletBalance() {
+    const bal = localStorage.getItem(WALLET_KEY);
+    return bal ? parseInt(bal) : INITIAL_BALANCE;
+}
+
+function updateWalletUI() {
+    const balance = getWalletBalance();
+    const els = document.querySelectorAll('#user-balance');
+    els.forEach(el => el.textContent = balance);
+    
+    // Show container if hidden
+    const containers = document.querySelectorAll('#wallet-container');
+    containers.forEach(c => c.style.display = 'flex');
+}
+
+function updateBalance(amount) {
+    const current = getWalletBalance();
+    const newBal = current + amount;
+    localStorage.setItem(WALLET_KEY, newBal);
+    updateWalletUI();
+    return newBal;
+}
+
+function getActiveBets() {
+    const bets = localStorage.getItem(BETS_KEY);
+    return bets ? JSON.parse(bets) : [];
+}
+
+function placeBet(eventId, choice, odds = 2.0) {
+    const amount = 10; // Custo fixo por aposta para simplificar
+    if (getWalletBalance() < amount) {
+        alert("Saldo insuficiente! Precisas de 10 fichas.");
+        return;
+    }
+
+    updateBalance(-amount);
+    
+    const bets = getActiveBets();
+    bets.push({
+        id: Date.now(),
+        eventId: eventId,
+        choice: choice, // 'home', 'draw', 'away'
+        amount: amount,
+        odds: odds,
+        status: 'open' // open, won, lost
+    });
+    
+    localStorage.setItem(BETS_KEY, JSON.stringify(bets));
+    alert(`Aposta de ${amount} fichas confirmada em '${choice}'!`);
+    renderizarEventos(document.querySelector('.botao-vista.active')?.dataset.view || 'list');
+}
+
+function resolveBets(event) {
+    const bets = getActiveBets();
+    let changed = false;
+
+    bets.forEach(bet => {
+        if (bet.status === 'open' && bet.eventId === event.idEvent) {
+            // Check result
+            let result = null;
+            const h = parseInt(event.intHomeScore);
+            const a = parseInt(event.intAwayScore);
+            
+            if (isNaN(h) || isNaN(a)) return; // No result yet
+
+            if (h > a) result = 'home';
+            else if (a > h) result = 'away';
+            else result = 'draw';
+
+            if (bet.choice === result) {
+                const winnings = bet.amount * bet.odds;
+                updateBalance(winnings);
+                bet.status = 'won';
+                alert(`Parabéns! Ganhaste ${winnings} fichas na aposta do jogo ${event.strEvent}!`);
+            } else {
+                bet.status = 'lost';
+            }
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        localStorage.setItem(BETS_KEY, JSON.stringify(bets));
+    }
+}
+
+// --- RESULT SIMULATION (GAMBLING ENABLER) ---
+// Como muitos jogos são no futuro, adicionamos um botão para "Simular" um resultado
+// e assim permitir testar o sistema de apostas.
+function simularResultado(eventId) {
+    const ev = todosEventos.find(e => e.idEvent === eventId);
+    if (!ev) return;
+
+    // Gerar random score
+    ev.intHomeScore = Math.floor(Math.random() * 5);
+    ev.intAwayScore = Math.floor(Math.random() * 5);
+    
+    // Atualizar cache
+    guardarEmCache(todosEventos);
+    
+    // Resolver apostas
+    resolveBets(ev);
+    
+    // Re-render
+    renderizarEventos(document.querySelector('.botao-vista.active')?.dataset.view || 'list');
+}
+
 
 // --- SISTEMA DE CACHE ---
-// Isto serve para guardar os dados no computador do utilizador.
-
 function guardarEmCache(dados) {
     const pacote = {
-        timestamp: new Date().getTime(), // Guardamos a hora para saber se está velho
+        timestamp: new Date().getTime(),
         eventos: dados
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(pacote));
-    console.log("Guardámos cache.");
 }
 
 function lerDoCache() {
     const dadosGuardados = localStorage.getItem(CACHE_KEY);
-    if (!dadosGuardados) return null; // Não temos nada guardado
+    if (!dadosGuardados) return null; 
 
     const pacote = JSON.parse(dadosGuardados);
     const agora = new Date().getTime();
 
-    // Se os dados tiverem menos de 24h, usamos-os
     if (agora - pacote.timestamp < CACHE_DURATION) {
-        console.log("A usar dados da cache.");
         return pacote.eventos;
     }
-    
-    console.log("Os dados estão velhos.");
     return null; 
 }
 
-// --- FUNÇÕES DE AJUDA ---
-
+// --- HELPERS ---
 function formatarData(dateStr) {
     if (!dateStr) return { day: '--', month: '--' };
     const date = new Date(dateStr);
@@ -78,8 +182,8 @@ function formatarData(dateStr) {
 }
 
 function formatarHora(timeStr) {
-    if (!timeStr) return 'A definir';
-    return timeStr.substring(0, 5); // Cortamos os segundos
+    if (!timeStr) return 'TBD';
+    return timeStr.substring(0, 5);
 }
 
 function obterIconeDesporto(sportName) {
@@ -90,25 +194,15 @@ function obterIconeDesporto(sportName) {
     return 'fa-calendar-alt';
 }
 
-// --- FUNÇÃO DE ORDENAÇÃO ---
-// Criámos esta função para garantir que a ordem é SEMPRE a mesma:
-// Jogos perto de "HOJE" aparecem primeiro (seja ontem ou amanhã).
 function ordenarPorProximidade(lista) {
     const hoje = new Date();
-    hoje.setHours(0,0,0,0); // Reset às horas para comparar apenas dias
-
+    hoje.setHours(0,0,0,0);
     return lista.sort((a, b) => {
         const dA = new Date(a.dateEvent + 'T' + (a.strTime || '00:00'));
         const dB = new Date(b.dateEvent + 'T' + (b.strTime || '00:00'));
-        
-        // Distância absoluta até hoje
         const diffA = Math.abs(dA - hoje);
         const diffB = Math.abs(dB - hoje);
-        
-        // Quem estiver mais perto ganha prioridade na lista
         if (diffA !== diffB) return diffA - diffB;
-        
-        // Desempate: O futuro aparece antes do passado
         return dA - dB;
     });
 }
@@ -122,7 +216,6 @@ function atualizarDropdownLigas() {
     const desportoSelecionado = selectDesporto.value;
     selectLiga.innerHTML = '<option value="all">Todas as Ligas</option>';
 
-    // Lógica: Se escolher "Todos", mete todas as ligas. Se escolher um desporto, filtra.
     if (desportoSelecionado === 'all') {
         Object.keys(configLigas).forEach(sport => {
             configLigas[sport].forEach(liga => {
@@ -142,11 +235,8 @@ function atualizarDropdownLigas() {
     }
 }
 
-// --- O CORAÇÃO DA API ---
-
+// --- API FETCH ---
 async function buscarEventosRecentes(leagueId) {
-    // Agora buscamos os "Próximos" (Next) e os "Passados" (Past)
-    // para garantir que temos os jogos DE AGORA
     const urlNext = `${BASE_URL}/${API_KEY}/eventsnextleague.php?id=${leagueId}`;
     const urlPast = `${BASE_URL}/${API_KEY}/eventspastleague.php?id=${leagueId}`;
 
@@ -158,7 +248,6 @@ async function buscarEventosRecentes(leagueId) {
 
         const nextEvents = resNext.events || [];
         const pastEvents = resPast.events || [];
-
         return [...nextEvents, ...pastEvents];
     } catch (error) {
         console.warn(`Erro na liga ${leagueId}`, error);
@@ -167,86 +256,107 @@ async function buscarEventosRecentes(leagueId) {
 }
 
 async function buscarTodosEventos() {
-    // 1. Primeiro, espreitamos a Cache.
     const dadosCache = lerDoCache();
-    if (dadosCache) {
-        return dadosCache; 
-    }
+    if (dadosCache) return dadosCache; 
 
-    // 2. Se não houver cache, temos de ir buscar tudo.
+    // Simulação de delay para loading
     const events = [];
     let todasLigas = [];
     Object.values(configLigas).forEach(lista => lista.forEach(l => todasLigas.push(l)));
     
     const statusLoading = document.querySelector('.carregamento p');
 
-    // Vamos percorrer liga a liga com pausas para não bloquear
     for (const [index, liga] of todasLigas.entries()) {
         if(statusLoading) statusLoading.textContent = `A carregar ${liga.nome} (${index + 1}/${todasLigas.length})...`;
-        
         try {
             const leagueEvents = await buscarEventosRecentes(liga.id);
             if (leagueEvents) events.push(...leagueEvents);
-            
-            // Esperamos 1.5 segundos entre cada pedido!
-            await new Promise(r => setTimeout(r, 1500)); 
-
-        } catch (err) {
-            console.warn(`Oops, falhou a liga ${liga.nome}`);
-        }
+            await new Promise(r => setTimeout(r, 800)); // Delay menor
+        } catch (err) { }
     }
 
-    // 3. Limpeza
     const uniqueEvents = Array.from(new Map(events.map(e => [e.idEvent, e])).values());
-    
-    // 4. ORDENAÇÃO INTELIGENTE (Usamos a função nova)
     const ordenados = ordenarPorProximidade(uniqueEvents);
-
-    // 5. Guardamos o trabalho feito na Cache
     guardarEmCache(ordenados);
-    
     return ordenados;
 }
 
-// --- CRIAR OS CARTÕES (O Visual) ---
-
+// --- CRIAR CARTÕES ---
 function criarCartaoEvento(event, viewType = 'list') {
     const { day, month } = formatarData(event.dateEvent);
     const time = formatarHora(event.strTime);
     const sportIcon = obterIconeDesporto(event.strSport);
     
-    const temRes = event.intHomeScore !== null && event.intAwayScore !== null;
-    const titulo = event.strEvent || `${event.strHomeTeam} vs ${event.strAwayTeam}`;
+    // Check results
+    const hasScore = event.intHomeScore !== null && event.intHomeScore !== undefined;
+    
+    // Betting State
+    const myBets = getActiveBets().filter(b => b.eventId === event.idEvent);
+    const hasBet = myBets.length > 0;
+    
+    let conteudoExtra = '';
+    let badgeEstado = '';
 
-    let link = temRes ? `<a href="resultados.html?id=${event.idEvent}" class="link-resultado"><i class="fas fa-chevron-right"></i></a>` : '';
+    if (hasScore) {
+        // Jogo Terminado
+        badgeEstado = `<span style="background: var(--cor-primaria); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase;">Terminado</span>`;
+        conteudoExtra = `
+            <div style="margin-top: 10px;">
+                <a href="resultados.html?id=${event.idEvent}" class="botao" style="font-size: 0.9rem; padding: 0.5rem 1rem;">Ver Resultado</a>
+            </div>
+        `;
+    } else {
+        // Jogo Por Decorrer (Apostas)
+        badgeEstado = `<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase;">Em Breve</span>`;
+        conteudoExtra = `
+            <div class="apostas-container">
+                <button class="btn-aposta" onclick="placeBet('${event.idEvent}', 'home')" ${hasBet ? 'disabled' : ''}>${event.strHomeTeam.substring(0,3)}</button>
+                <button class="btn-aposta" onclick="placeBet('${event.idEvent}', 'draw')" ${hasBet ? 'disabled' : ''}>X</button>
+                <button class="btn-aposta" onclick="placeBet('${event.idEvent}', 'away')" ${hasBet ? 'disabled' : ''}>${event.strAwayTeam.substring(0,3)}</button>
+                <button class="btn-simular" onclick="simularResultado('${event.idEvent}')" title="Simular Resultado (Admin)"><i class="fas fa-magic"></i></button>
+            </div>
+        `;
+    }
+    
+    if (hasBet) {
+        let betStatus = hasScore ? (myBets[0].status === 'won' ? '<span style="color:var(--cor-sucesso)">(Ganhou!)</span>' : '<span style="color:red">(Perdeu)</span>') : '';
+        conteudoExtra += `<p style="font-size:0.8rem; color: #fbbf24; margin-top:0.5rem;"><i class="fas fa-ticket-alt"></i> Aposta: ${myBets[0].choice} ${betStatus}</p>`;
+    }
+
+    const titulo = event.strEvent || `${event.strHomeTeam} vs ${event.strAwayTeam}`;
 
     if (viewType === 'list') {
         return `
             <div class="cartao-evento">
                 <div class="data-evento"><span class="dia">${day}</span><span class="mes">${month}</span></div>
                 <div class="info-evento">
-                    <h3>${titulo}</h3>
-                    <p><i class="fas ${sportIcon}"></i> ${event.strSport} - ${event.strLeague}</p>
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <h3>${titulo}</h3>
+                        ${badgeEstado}
+                    </div>
+                    <p><i class="fas ${sportIcon}"></i> ${event.strLeague}</p>
                     <p><i class="far fa-clock"></i> ${time}</p>
+                    ${conteudoExtra}
                 </div>
-                ${link}
             </div>`;
     } else {
         return `
             <div class="cartao-evento-grelha">
                 <div class="cabecalho-evento"><span>${day} ${month}</span><span>${time}</span></div>
                 <div class="corpo-evento">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        ${badgeEstado}
+                    </div>
                     <h3>${titulo}</h3>
                     <p><i class="fas ${sportIcon}"></i> ${event.strSport}</p>
-                    <p class="liga">${event.strLeague}</p>
+                    ${conteudoExtra}
                 </div>
-                ${temRes ? `<a href="resultados.html?id=${event.idEvent}" class="link-resultado-grelha">Ver Resultado</a>` : ''}
             </div>`;
     }
 }
 
-// --- RENDERIZAR NO ECRÃ ---
 
+// --- RENDER ---
 function renderizarEventos(viewType = 'list') {
     const container = document.getElementById('container-eventos');
     if (!container) return;
@@ -268,7 +378,6 @@ function renderizarEventos(viewType = 'list') {
 
 function atualizarPaginacao() {
     const total = Math.ceil(eventosFiltrados.length / eventosPorPagina) || 1;
-    
     const elPag = document.getElementById('pagina-atual');
     const elTot = document.getElementById('paginas-totais');
     if(elPag) elPag.textContent = paginaAtual;
@@ -281,15 +390,12 @@ function atualizarPaginacao() {
 }
 
 // --- FILTROS ---
-
 function aplicarFiltros() {
-    // Vamos buscar o que o utilizador escolheu
     const sport = document.getElementById('desporto').value;
     const lg = document.getElementById('liga').value;
     const dt = document.getElementById('data').value;
     const tm = document.getElementById('equipa').value.toLowerCase();
     
-    // 1. Filtramos a lista principal
     let tempEventos = todosEventos.filter(e => {
         if (sport !== 'all' && e.strSport !== sportMap[sport]) return false;
         if (lg !== 'all' && e.idLeague !== lg) return false;
@@ -298,67 +404,63 @@ function aplicarFiltros() {
         return true;
     });
     
-    // 2. Reordenamos a lista filtrada
-    // Assim, mesmo depois de filtrar, o foco continua no "Hoje".
     eventosFiltrados = ordenarPorProximidade(tempEventos);
-    
-    // Resetamos a página para 1 e desenhamos
     paginaAtual = 1;
     const view = document.querySelector('.botao-vista.active') ? document.querySelector('.botao-vista.active').dataset.view : 'list';
     renderizarEventos(view);
 }
 
 function limparFiltros() {
-    // Reseta tudo para o estado inicial
     document.getElementById('desporto').value = 'all';
     atualizarDropdownLigas();
     document.getElementById('liga').value = 'all';
     document.getElementById('data').value = '';
     document.getElementById('equipa').value = '';
-    
-    // Restaura a lista completa (que já está ordenada)
     eventosFiltrados = [...todosEventos];
     paginaAtual = 1;
     renderizarEventos('list');
 }
 
-// --- ARRANQUE ---
-
+// --- INIT ---
 async function initCalendario() {
     const container = document.getElementById('container-eventos');
-    container.innerHTML = `<div class="carregamento"><i class="fas fa-spinner fa-spin"></i><p>A atualizar base de dados (pode demorar 1 min na primeira vez)...</p></div>`;
+    container.innerHTML = `<div class="carregamento"><i class="fas fa-spinner fa-spin"></i><p>A atualizar base de dados...</p></div>`;
     
+    updateWalletUI(); // Init Wallet
     atualizarDropdownLigas();
     todosEventos = await buscarTodosEventos();
+    
+    // Check for betting resolutions on load
+    todosEventos.forEach(ev => resolveBets(ev));
+    
     eventosFiltrados = [...todosEventos];
     renderizarEventos('list');
     
-    // Ligar os botões às funções
     document.getElementById('aplicar-filtros').addEventListener('click', aplicarFiltros);
     document.getElementById('limpar-filtros').addEventListener('click', limparFiltros);
     document.getElementById('desporto').addEventListener('change', atualizarDropdownLigas);
     
-    // Navegação
     document.getElementById('pagina-anterior').addEventListener('click', () => { if(paginaAtual>1){ paginaAtual--; renderizarEventos(document.querySelector('.botao-vista.active').dataset.view); window.scrollTo({top:0,behavior:'smooth'});}});
     document.getElementById('pagina-seguinte').addEventListener('click', () => { const t=Math.ceil(eventosFiltrados.length/eventosPorPagina); if(paginaAtual<t){ paginaAtual++; renderizarEventos(document.querySelector('.botao-vista.active').dataset.view); window.scrollTo({top:0,behavior:'smooth'});}});
     
-    // Troca de vistas
     document.querySelectorAll('.botao-vista').forEach(b => b.addEventListener('click', function() { document.querySelectorAll('.botao-vista').forEach(x=>x.classList.remove('active')); this.classList.add('active'); renderizarEventos(this.dataset.view); }));
 }
 
 async function initHomepage() {
     const container = document.getElementById('container-proximos-index');
     if(!container) return;
+    updateWalletUI(); 
     
-    // Na Home, usamos os mesmos dados inteligentes.
     let todos = await buscarTodosEventos(); 
     const top3 = todos.slice(0, 3);
-
     if(top3.length === 0) container.innerHTML = '<p>Sem eventos.</p>';
     else container.innerHTML = top3.map(e => criarCartaoEvento(e, 'list')).join('');
 }
 
-// O evento que dispara quando a página acaba de carregar
+// Global functions for inline HTML calls
+window.placeBet = placeBet;
+window.simularResultado = simularResultado;
+
 document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('container-eventos')) initCalendario();
     if(document.getElementById('container-proximos-index')) initHomepage();
