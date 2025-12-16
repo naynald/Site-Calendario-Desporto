@@ -37,7 +37,7 @@
                     <div class="item-contacto"> <i class="fas fa-envelope"></i>
                         <div>
                             <h3>Email</h3>
-                            <p>info@sportcalendar.pt</p>
+                            <p>SportCalendar@outlook.pt</p>
                         </div>
                     </div>
                     <div class="item-contacto"> <i class="fas fa-clock"></i>
@@ -49,16 +49,16 @@
                 </div>
                 <div class="form-contactos"> <h2>Envie-nos uma Mensagem</h2>
                     <form id="form-contacto"> <div class="grupo-form"> <label for="name">Nome</label>
-                            <input type="text" id="name" required>
+                            <input type="text" id="name" name="name" required>
                         </div>
                         <div class="grupo-form"> <label for="email">Email</label>
-                            <input type="email" id="email" required>
+                            <input type="email" id="email" name="email" required>
                         </div>
                         <div class="grupo-form"> <label for="subject">Assunto</label>
-                            <input type="text" id="subject" required>
+                            <input type="text" id="subject" name="subject" required>
                         </div>
                         <div class="grupo-form"> <label for="message">Mensagem</label>
-                            <textarea id="message" rows="5" required></textarea>
+                            <textarea id="message" name="message" rows="5" required></textarea>
                         </div>
                         <button type="submit" class="botao">Enviar Mensagem</button> </form>
                 </div>
@@ -69,7 +69,7 @@
                 <div class="item-faq"> <div class="pergunta-faq"> <h3>Os resultados são atualizados em tempo real?</h3>
                         <i class="fas fa-chevron-down"></i>
                     </div>
-                    <div class="resposta-faq"> <p>Sim, temos uma equipa dedicada e sistemas automatizados que atualizam os resultados em tempo real à medida que os eventos decorrem.</p>
+                    <div class="resposta-faq"> <p>Sim, temos uma equipa dedicada e sistemas automatizados que atualizam os resultados quando os eventos terminam.</p>
                     </div>
                 </div>
                 <div class="item-faq"> <div class="pergunta-faq"> <h3>O SportCalendar é gratuito?</h3>
@@ -113,5 +113,10 @@
             </div>   
         </div>
     </footer>
-    <script src="logica.js"></script> </body>
+    <script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js">
+    </script>
+    <script src="logica.js"></script>
+    <script src="contactos.js"></script>
+</body>
 </html>

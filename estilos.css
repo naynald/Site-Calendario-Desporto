@@ -1,6 +1,4 @@
 /* --- Variáveis Globais --- */
-/* Variáveis CSS (:root) para centralizar as cores principais
-   e facilitar a manutenção do tema. */
 :root {
     --cor-primaria: #e94560; 
     --cor-primaria-hover: #d63447;
@@ -28,14 +26,14 @@ body {
     background-color: var(--cor-fundo-light);
 }
 
-/* Layout principal (usado em todas as páginas) */
+/* Layout principal */
 .conteudo {
     width: 90%;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* --- Cabeçalho (header) (Todas as páginas) --- */
+/* --- Cabeçalho --- */
 header {
     background-color: var(--cor-fundo-dark);
     color: var(--cor-branca);
@@ -66,7 +64,7 @@ header .conteudo {
 .navegacao ul {
     display: flex;
     list-style: none;
-    align-items: center; /* Alinha items verticalmente */
+    align-items: center; 
 }
 
 .navegacao ul li {
@@ -97,7 +95,7 @@ header .conteudo {
     background-color: var(--cor-primaria);
 }
 
-/* --- Botões (Estilos Base) --- */
+/* --- Botões --- */
 .botao,
 .botao-filtro,
 .botao-pagina,
@@ -136,7 +134,7 @@ header .conteudo {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Estado desativado (usado em calendario.html) */
+/* Estado desativado */
 .botao-pagina:disabled {
     background-color: #ccc;
     cursor: not-allowed;
@@ -144,7 +142,7 @@ header .conteudo {
     box-shadow: none;
 }
 
-/* --- Formulários (Estilos Base) --- */
+/* --- Formulários --- */
 .grupo-form input,
 .grupo-form textarea,
 .grupo-filtro select,
@@ -166,7 +164,7 @@ header .conteudo {
     border-color: var(--cor-primaria);
 }
 
-/* Labels e Grupos (contactos.html, calendario.html) */
+/* Labels e Grupos */
 .grupo-form {
     margin-bottom: 1.5rem;
 }
@@ -184,7 +182,7 @@ section {
     padding: 5rem 0;
 }
 
-/* Título padrão de secção (usado em index.html, contactos.html) */
+/* Título padrão de secção */
 section h2 {
     text-align: center;
     margin-bottom: 3rem;
@@ -192,7 +190,7 @@ section h2 {
     color: var(--cor-fundo-dark);
 }
 
-/* Cabeçalho de página (usado em calendario.html, contactos.html, resultados.html) */
+/* Cabeçalho de página */
 .cabecalho-pagina {
     background-color: var(--cor-fundo-dark);
     color: var(--cor-branca);
@@ -205,7 +203,7 @@ section h2 {
     margin-bottom: 0.5rem;
 }
 
-/* Grelhas (usadas em index.html) */
+/* Grelhas */
 .grelha-desportos,
 .grelha-funcionalidades {
     display: grid;
@@ -213,9 +211,9 @@ section h2 {
     gap: 2rem;
 }
 
-/* --- Cartões (Cards) --- */
+/* --- Cartões --- */
 
-/* Cartão de Desporto / Funcionalidade (index.html) */
+/* Cartão de Desporto / Funcionalidade  */
 .cartao-desporto,
 .funcionalidade {
     background-color: var(--cor-fundo-light);
@@ -244,7 +242,7 @@ section h2 {
     margin-bottom: 1rem;
 }
 
-/* Cartão de Evento - Vista Lista (index.html, calendario.html) */
+/* Cartão de Evento  */
 .cartao-evento-proximo,
 .cartao-evento {
     display: flex;
@@ -308,7 +306,7 @@ section h2 {
     gap: 5px;
 }
 
-/* --- Página Inicial (index.html) --- */
+/* --- Página Inicial --- */
 .hero { 
     background: linear-gradient(rgba(26, 26, 46, 0.8), rgba(26, 26, 46, 0.8)),
                 url('https://images.unsplash.com/photo-1459865264687-595d652de67e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
@@ -342,7 +340,7 @@ section h2 {
     text-align: center;
 }
 
-/* --- Página Contactos (contactos.html) --- */
+/* --- Página Contactos --- */
 .seccao-contactos {
     padding: 5rem 0;
     background-color: var(--cor-branca);
@@ -421,7 +419,7 @@ section h2 {
     max-height: 200px;
 }
 
-/* --- Página Calendário (calendario.html) --- */
+/* --- Página Calendário --- */
 .filtros {
     background-color: var(--cor-branca);
     padding: 2rem 0;
@@ -484,7 +482,7 @@ section h2 {
     border-color: var(--cor-primaria);
 }
 
-/* Link Seta (Resultado) */
+/* Link Seta */
 .link-resultado {
     display: flex;
     align-items: center;
@@ -501,7 +499,7 @@ section h2 {
     color: var(--cor-branca);
 }
 
-/* Vista em Grelha (calendario.html) */
+/* Vista em Grelha */
 .grelha-eventos {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -582,7 +580,7 @@ section h2 {
     color: var(--cor-fundo-dark);
 }
 
-/* Estados de Carregamento / Vazio */
+/* Estados de Carregamento */
 .carregamento,
 .sem-eventos {
     text-align: center;
@@ -606,7 +604,7 @@ section h2 {
     100% { transform: rotate(360deg); }
 }
 
-/* --- Página Resultados (resultados.html) --- */
+/* --- Página Resultados --- */
 .detalhe-resultado {
     padding: 3rem 0;
 }
@@ -698,7 +696,7 @@ section h2 {
 }
 
 
-/* --- Rodapé (Footer) (Todas as páginas) --- */
+/* --- Rodapé --- */
 footer {
     background-color: var(--cor-fundo-dark);
     color: var(--cor-branca);
@@ -777,7 +775,7 @@ footer {
     border-top: 1px solid #2d2d44;
 }
 
-/* --- GAMBLING UI (ADICIONADO) --- */
+/* --- GAMBLING UI --- */
 .wallet-badge {
     margin-left: 1.5rem;
     background: rgba(255, 255, 255, 0.1);
@@ -843,7 +841,7 @@ footer {
 }
 
 
-/* --- Media Queries (Responsividade) --- */
+/* --- Media Queries --- */
 @media (max-width: 768px) {
     header .conteudo {
         flex-direction: column;

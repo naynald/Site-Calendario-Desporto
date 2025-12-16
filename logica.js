@@ -73,7 +73,7 @@ function getActiveBets() {
 function placeBet(eventId, choice, odds = 2.0) {
     const amount = 100; // Custo fixo por aposta
     if (getWalletBalance() < amount) {
-        alert("Saldo insuficiente! Precisas de 10 fichas. Mas não faz mal tens aqui 100 fichas agora!");
+        alert("Saldo insuficiente! Precisas de 100 fichas. Mas não faz mal tens aqui 100 fichas agora!");
         updateBalance(INITIAL_BALANCE);
         return;
     }
