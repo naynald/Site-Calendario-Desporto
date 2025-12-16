@@ -40,7 +40,7 @@ let eventosPorPagina = 12;
 let todosEventos = [];    
 let eventosFiltrados = []; 
 
-// --- WALLET & BETTING SYSTEM ---
+// --- WALLET e SISTEMA DE APOSTAS ---
 
 function getWalletBalance() {
     const bal = localStorage.getItem(WALLET_KEY);
@@ -52,7 +52,7 @@ function updateWalletUI() {
     const els = document.querySelectorAll('#user-balance');
     els.forEach(el => el.textContent = balance);
     
-    // Show container if hidden
+    // Mostrar container se escondido
     const containers = document.querySelectorAll('#wallet-container');
     containers.forEach(c => c.style.display = 'flex');
 }
@@ -71,9 +71,10 @@ function getActiveBets() {
 }
 
 function placeBet(eventId, choice, odds = 2.0) {
-    const amount = 10; // Custo fixo por aposta para simplificar
+    const amount = 100; // Custo fixo por aposta
     if (getWalletBalance() < amount) {
-        alert("Saldo insuficiente! Precisas de 10 fichas.");
+        alert("Saldo insuficiente! Precisas de 10 fichas. Mas não faz mal tens aqui 100 fichas agora!");
+        updateBalance(INITIAL_BALANCE);
         return;
     }
 
@@ -100,12 +101,12 @@ function resolveBets(event) {
 
     bets.forEach(bet => {
         if (bet.status === 'open' && bet.eventId === event.idEvent) {
-            // Check result
+            // Verificar resultado
             let result = null;
             const h = parseInt(event.intHomeScore);
             const a = parseInt(event.intAwayScore);
             
-            if (isNaN(h) || isNaN(a)) return; // No result yet
+            if (isNaN(h) || isNaN(a)) return; // Ainda sem resultado
 
             if (h > a) result = 'home';
             else if (a > h) result = 'away';
@@ -287,10 +288,10 @@ function criarCartaoEvento(event, viewType = 'list') {
     const time = formatarHora(event.strTime);
     const sportIcon = obterIconeDesporto(event.strSport);
     
-    // Check results
+    // Check nos resultados
     const hasScore = event.intHomeScore !== null && event.intHomeScore !== undefined;
     
-    // Betting State
+    // Estado das apostas
     const myBets = getActiveBets().filter(b => b.eventId === event.idEvent);
     const hasBet = myBets.length > 0;
     
@@ -421,16 +422,16 @@ function limparFiltros() {
     renderizarEventos('list');
 }
 
-// --- INIT ---
+// --- INICIALIZAÇÃO ---
 async function initCalendario() {
     const container = document.getElementById('container-eventos');
     container.innerHTML = `<div class="carregamento"><i class="fas fa-spinner fa-spin"></i><p>A atualizar base de dados...</p></div>`;
     
-    updateWalletUI(); // Init Wallet
+    updateWalletUI(); // Iniializar a wallet
     atualizarDropdownLigas();
     todosEventos = await buscarTodosEventos();
     
-    // Check for betting resolutions on load
+    // Check para a resolução de apostas
     todosEventos.forEach(ev => resolveBets(ev));
     
     eventosFiltrados = [...todosEventos];
@@ -457,7 +458,7 @@ async function initHomepage() {
     else container.innerHTML = top3.map(e => criarCartaoEvento(e, 'list')).join('');
 }
 
-// Global functions for inline HTML calls
+// Funões globais para chamadas de inline HTML
 window.placeBet = placeBet;
 window.simularResultado = simularResultado;
 
