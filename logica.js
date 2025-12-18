@@ -73,7 +73,7 @@ function getActiveBets() {
 function placeBet(eventId, choice, odds = 2.0) {
     const amount = 100; // Custo fixo por aposta
     if (getWalletBalance() < amount) {
-        alert("Saldo insuficiente! Precisas de 100 fichas. Mas não faz mal tens aqui 100 fichas agora!");
+        mostrarNotificacao("Saldo insuficiente! Tens aqui 100 fichas para jogar!", 'erro');
         updateBalance(INITIAL_BALANCE);
         return;
     }
@@ -91,7 +91,7 @@ function placeBet(eventId, choice, odds = 2.0) {
     });
     
     localStorage.setItem(BETS_KEY, JSON.stringify(bets));
-    alert(`Aposta de ${amount} fichas confirmada em '${choice}'!`);
+    mostrarNotificacao(`Aposta de ${amount} fichas confirmada em '${choice}'!`, 'sucesso');
     renderizarEventos(document.querySelector('.botao-vista.active')?.dataset.view || 'list');
 }
 
@@ -116,7 +116,7 @@ function resolveBets(event) {
                 const winnings = bet.amount * bet.odds;
                 updateBalance(winnings);
                 bet.status = 'won';
-                alert(`Parabéns! Ganhaste ${winnings} fichas na aposta do jogo ${event.strEvent}!`);
+                mostrarNotificacao(`Parabéns! Ganhaste ${winnings} fichas no jogo ${event.strEvent}!`, 'sucesso');
             } else {
                 bet.status = 'lost';
             }

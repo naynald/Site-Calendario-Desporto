@@ -24,13 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Enviar formulário
             emailjs.sendForm(serviceID, templateID, this)
                 .then(function() {
-                    alert('Mensagem enviada com sucesso!');
+                    mostrarNotificacao('Mensagem enviada com sucesso!', 'sucesso');
                     contactForm.reset();
                     btn.textContent = originalText;
                     btn.disabled = false;
                 }, function(error) {
                     console.error('Falha ao enviar email:', error);
-                    alert('Ocorreu um erro ao enviar a mensagem. Por favor, tente novamente mais tarde.');
+                    mostrarNotificacao('Erro ao enviar mensagem. Tente mais tarde.', 'erro');
                     btn.textContent = originalText;
                     btn.disabled = false;
                 });
